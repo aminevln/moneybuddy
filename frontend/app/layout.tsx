@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import type { Metadata, Viewport } from "next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +15,23 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MoneyBuddy",
   description: "Il tuo assistente finanziario con AI",
+  applicationName: "MoneyBuddy",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MoneyBuddy",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

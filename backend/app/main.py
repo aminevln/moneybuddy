@@ -10,6 +10,7 @@ Documentazione automatica disponibile a:
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,20 +20,15 @@ from app.db.session import get_db, close_db_connections
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Funzione che gira all'avvio e allo shutdown dell'app.
-    """
-    # === Startup ===
+    """Funzione che gira all'avvio e allo shutdown dell'app."""
     print(f"🚀 Starting {settings.app_name} in {settings.environment} mode")
     print(f"🔌 Connected to database (lazy: il pool si apre alla prima query)")
     yield
-    # === Shutdown ===
     print(f"👋 Shutting down {settings.app_name}")
     await close_db_connections()
     print(f"🔌 Database pool closed")
 
 
-# Creazione dell'applicazione FastAPI
 app = FastAPI(
     title=settings.app_name,
     description="Personal finance AI assistant with RAG",
@@ -40,6 +36,22 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
+)
+
+
+# ============================================================
+# CORS MIDDLEWARE
+# ============================================================
+# Permette al frontend (su localhost:3000) di chiamare il backend
+# (su localhost:8000). Senza questo, il browser blocca le richieste
+# per la policy "same-origin".
+# ============================================================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -66,8 +78,6 @@ async def health(db: AsyncSession = Depends(get_db)):
     - L'app sia in esecuzione
     - La connessione al database funzioni
     - pgvector sia disponibile
-    
-    Usato da Docker, Kubernetes, monitoring per capire se l'app è viva.
     """
     health_status = {
         "status": "ok",
@@ -76,7 +86,6 @@ async def health(db: AsyncSession = Depends(get_db)):
         "pgvector": "unknown",
     }
     
-    # Test connessione DB con una query semplice
     try:
         result = await db.execute(text("SELECT 1"))
         result.scalar()
@@ -85,7 +94,6 @@ async def health(db: AsyncSession = Depends(get_db)):
         health_status["status"] = "degraded"
         health_status["database"] = f"error: {str(e)}"
     
-    # Test che pgvector sia installato
     try:
         result = await db.execute(
             text("SELECT extname FROM pg_extension WHERE extname = 'vector'")
@@ -99,7 +107,6 @@ async def health(db: AsyncSession = Depends(get_db)):
         health_status["status"] = "degraded"
         health_status["pgvector"] = f"error: {str(e)}"
     
-    # Se qualcosa è rotto, restituiamo 503 (Service Unavailable)
     if health_status["status"] != "ok":
         raise HTTPException(status_code=503, detail=health_status)
     

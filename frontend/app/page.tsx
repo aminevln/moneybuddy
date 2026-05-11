@@ -1,12 +1,10 @@
 /**
  * Pagina home di MoneyBuddy.
- * 
- * Per ora una landing minimale che verifica:
- * - Tailwind CSS funziona
- * - Il setup è completo
- * 
- * Nello step successivo aggiungeremo la chiamata al backend.
+ *
+ * Mostra una landing minimale con lo stato live dei servizi backend.
  */
+
+import { HealthStatus } from "@/components/HealthStatus";
 
 export default function HomePage() {
   return (
@@ -18,16 +16,9 @@ export default function HomePage() {
         <p className="text-slate-400 mb-6">
           Il tuo assistente finanziario con AI
         </p>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-            <span className="text-slate-300">Backend</span>
-            <span className="text-slate-500 text-sm">verifica in arrivo...</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-            <span className="text-slate-300">Database</span>
-            <span className="text-slate-500 text-sm">verifica in arrivo...</span>
-          </div>
-        </div>
+        
+        <HealthStatus />
+        
         <p className="text-xs text-slate-500 mt-6 text-center">
           Fase 1 · Setup iniziale
         </p>
