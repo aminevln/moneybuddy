@@ -16,13 +16,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.session import get_db, close_db_connections
-from app.api import auth
+from app.api import auth, categories
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Funzione che gira all'avvio e allo shutdown dell'app."""
     print(f"🚀 Starting {settings.app_name} in {settings.environment} mode")
+    
+    # Seed delle categorie di sistema (idempotente)
+    from app.db.session import AsyncSessionLocal
+    from app.seed.system_categories import seed_system_categories
+    
+    async with AsyncSessionLocal() as db:
+        try:
+            created = await seed_system_categories(db)
+            if created > 0:
+                print(f"🌱 Seeded {created} system categories")
+        except Exception as e:
+            print(f"⚠️  Seed failed: {e}")
+    
     print(f"🔌 Connected to database (lazy: il pool si apre alla prima query)")
     yield
     print(f"👋 Shutting down {settings.app_name}")
@@ -58,6 +71,7 @@ app.add_middleware(
 # ROUTERS
 # ============================================================
 app.include_router(auth.router)
+app.include_router(categories.router)
 
 # ============================================================
 # ENDPOINTS

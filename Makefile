@@ -5,7 +5,7 @@
 
 COMPOSE = docker compose -f infra/docker-compose.yml
 
-.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migration migration-empty migration-down migration-history frontend test
+.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migration migration-empty migration-down migration-history frontend test seed
 
 help:  ## Mostra questo aiuto
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -45,3 +45,6 @@ frontend:  ## Avvia il frontend Next.js in dev mode
 
 test:  ## Esegue tutti i test del backend
 	cd backend && uv run pytest -v
+
+seed:  ## Esegue il seed delle categorie di sistema
+	cd backend && uv run python -m scripts.seed
