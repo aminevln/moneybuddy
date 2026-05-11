@@ -36,3 +36,8 @@ out/
 *.sql.bak
 postgres-data/
 redis-data/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
