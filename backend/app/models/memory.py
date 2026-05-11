@@ -47,7 +47,7 @@ class MemoryChunk(UUIDPrimaryKeyMixin, Base):
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     embedding: Mapped[Optional[list[float]]] = mapped_column(
-        Vector(1024),  # voyage-3-large = 1024 dimensioni
+        Vector(768),  # gemini-embedding-001 (dimensione compatta nativa)
         nullable=True,
     )
     importance: Mapped[int] = mapped_column(
