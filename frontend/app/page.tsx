@@ -1,12 +1,23 @@
+"use client";
+
 /**
  * Pagina home di MoneyBuddy.
  *
- * Mostra una landing minimale con lo stato live dei servizi backend.
+ * Mostra:
+ * - Stato live dei servizi backend
+ * - Se loggato: nome utente + bottone logout
+ * - Se non loggato: bottone "Accedi" / "Registrati"
  */
 
+import Link from "next/link";
+
 import { HealthStatus } from "@/components/HealthStatus";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/lib/auth/context/useAuth";
 
 export default function HomePage() {
+  const { user, status, logout } = useAuth();
+  
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-6">
       <div className="max-w-md w-full bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8 shadow-2xl">
@@ -16,6 +27,38 @@ export default function HomePage() {
         <p className="text-slate-400 mb-6">
           Il tuo assistente finanziario con AI
         </p>
+        
+        {/* Stato auth */}
+        {status === "loading" && (
+          <div className="mb-6 p-3 bg-slate-900/50 rounded-lg text-slate-400 text-sm">
+            Verifico sessione...
+          </div>
+        )}
+        
+        {status === "authenticated" && user && (
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <p className="text-emerald-400 text-sm mb-3">
+              Ciao <span className="font-semibold">{user.display_name}</span>!
+            </p>
+            <button
+              onClick={logout}
+              className="text-sm text-slate-400 hover:text-slate-200 underline"
+            >
+              Esci
+            </button>
+          </div>
+        )}
+        
+        {status === "unauthenticated" && (
+          <div className="mb-6 grid grid-cols-2 gap-3">
+            <Link href="/login" className="block">
+              <Button variant="secondary">Accedi</Button>
+            </Link>
+            <Link href="/register" className="block">
+              <Button>Registrati</Button>
+            </Link>
+          </div>
+        )}
         
         <HealthStatus />
         
