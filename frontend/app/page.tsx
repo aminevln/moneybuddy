@@ -40,9 +40,13 @@ export default function HomePage() {
             <p className="text-emerald-400 text-sm mb-3">
               Ciao <span className="font-semibold">{user.display_name}</span>!
             </p>
-            <div className="flex gap-3 text-sm">
+            <div className="flex flex-wrap gap-3 text-sm">
               <Link href="/me" className="text-emerald-400 hover:text-emerald-300 underline">
                 Profilo
+              </Link>
+              <span className="text-slate-600">·</span>
+              <Link href="/settings/categories" className="text-emerald-400 hover:text-emerald-300 underline">
+                Categorie
               </Link>
               <span className="text-slate-600">·</span>
               <button
