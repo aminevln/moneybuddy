@@ -1,85 +1,118 @@
 "use client";
 
 /**
- * Pagina /me: profilo dell'utente loggato.
+ * Pagina di login.
  *
- * Demo della "protected route". Mostra tutti i dati che il backend
- * conosce dell'utente.
+ * Form con email e password.
+ * Se l'utente è già loggato, redirect immediato alla home (o a ?next=...).
  */
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { useAuth } from "@/lib/auth/context/useAuth";
+import { getErrorMessage } from "@/lib/api/errors";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { FormError } from "@/components/ui/FormError";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 
 
-export default function MePage() {
-  const { user, logout } = useAuth();
+export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login, status } = useAuth();
   
-  // RequireAuth ci garantisce che user != null qui dentro
-  if (!user) return null;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="w-full max-w-md">
-        <Card>
-          <h1 className="text-2xl font-bold text-white mb-1">
-            Il tuo profilo
-          </h1>
-          <p className="text-slate-400 text-sm mb-6">
-            I dati che MoneyBuddy conosce di te.
-          </p>
-          
-          <dl className="space-y-3 text-sm">
-            <Field label="Nome" value={user.display_name} />
-            <Field label="Email" value={user.email} />
-            <Field label="Valuta" value={user.currency} />
-            <Field label="Fuso orario" value={user.timezone} />
-            <Field
-              label="Giorno stipendio"
-              value={user.salary_day ? `${user.salary_day} del mese` : "Non impostato"}
-            />
-            <Field
-              label="Registrato il"
-              value={new Date(user.created_at).toLocaleDateString("it-IT", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            />
-            <Field label="User ID" value={user.id} mono />
-          </dl>
-          
-          <div className="mt-6 space-y-2">
-            <Link href="/" className="block">
-              <Button variant="secondary">Torna alla home</Button>
-            </Link>
-            <button
-              onClick={logout}
-              className="w-full text-sm text-slate-400 hover:text-slate-200 underline py-2"
-            >
-              Esci dall&apos;account
-            </button>
-          </div>
-        </Card>
+  // Se già loggato, redirect a `next` o a home
+  useEffect(() => {
+    if (status === "authenticated") {
+      const next = searchParams.get("next") ?? "/";
+      router.replace(next);
+    }
+  }, [status, router, searchParams]);
+  
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    
+    try {
+      await login(email.trim(), password);
+      const next = searchParams.get("next") ?? "/";
+      router.push(next);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  // Spinner durante caricamento iniziale o redirect
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="text-center text-slate-400 text-sm py-8">
+        {status === "loading" ? "Verifico sessione..." : "Reindirizzamento..."}
       </div>
-    </main>
-  );
-}
-
-
-// ============================================================
-// SUB-COMPONENTS
-// ============================================================
-
-function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+    );
+  }
+  
   return (
-    <div className="flex flex-col gap-0.5 p-3 bg-slate-900/50 rounded-lg">
-      <dt className="text-xs text-slate-500 uppercase tracking-wider">{label}</dt>
-      <dd className={`text-slate-200 ${mono ? "font-mono text-xs break-all" : ""}`}>
-        {value}
-      </dd>
-    </div>
+    <Card>
+      <h1 className="text-2xl font-bold text-white mb-2">Bentornato</h1>
+      <p className="text-slate-400 text-sm mb-6">
+        Accedi al tuo account MoneyBuddy.
+      </p>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormError message={error} />
+        
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="mario@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            disabled={loading}
+            autoFocus
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="La tua password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            disabled={loading}
+          />
+        </div>
+        
+        <Button type="submit" loading={loading}>
+          Accedi
+        </Button>
+      </form>
+      
+      <p className="text-sm text-slate-400 text-center mt-6">
+        Non hai un account?{" "}
+        <Link href="/register" className="text-emerald-400 hover:text-emerald-300">
+          Registrati
+        </Link>
+      </p>
+    </Card>
   );
 }
