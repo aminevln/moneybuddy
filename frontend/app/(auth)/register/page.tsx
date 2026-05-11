@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { useAuth } from "@/lib/auth/context/useAuth";
 import { getErrorMessage } from "@/lib/api/errors";
@@ -22,7 +22,14 @@ import { Label } from "@/components/ui/Label";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, status } = useAuth();
+
+  // Se l'utente è già loggato, mandalo alla home
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

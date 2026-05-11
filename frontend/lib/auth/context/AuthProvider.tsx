@@ -16,7 +16,7 @@
  */
 
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
-
+import { onForcedLogout } from "@/lib/auth/refresh-manager";
 import { getMe, loginUser, registerUser, type RegisterPayload } from "@/lib/auth/api";
 import {
   clearAuth,
@@ -92,6 +92,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // ============================================================
+  // Ascolta forced logout (es. refresh token fallito)
+  // ============================================================
+  useEffect(() => {
+    const unsubscribe = onForcedLogout(() => {
+      setUser(null);
+      setStatus("unauthenticated");
+      // Il redirect a /login lo facciamo nel componente RequireAuth
+    });
+    return unsubscribe;
   }, []);
   
   // ============================================================

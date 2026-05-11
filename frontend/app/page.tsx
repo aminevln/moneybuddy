@@ -40,12 +40,18 @@ export default function HomePage() {
             <p className="text-emerald-400 text-sm mb-3">
               Ciao <span className="font-semibold">{user.display_name}</span>!
             </p>
-            <button
-              onClick={logout}
-              className="text-sm text-slate-400 hover:text-slate-200 underline"
-            >
-              Esci
-            </button>
+            <div className="flex gap-3 text-sm">
+              <Link href="/me" className="text-emerald-400 hover:text-emerald-300 underline">
+                Profilo
+              </Link>
+              <span className="text-slate-600">·</span>
+              <button
+                onClick={logout}
+                className="text-slate-400 hover:text-slate-200 underline"
+              >
+                Esci
+              </button>
+            </div>
           </div>
         )}
         
