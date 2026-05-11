@@ -67,3 +67,34 @@ class UserResponse(BaseModel):
     currency: str
     salary_day: int | None
     created_at: datetime
+
+# ============================================================
+# TOKEN SCHEMAS
+# ============================================================
+
+class TokenPair(BaseModel):
+    """Coppia access + refresh restituita al login/register."""
+    
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class TokenRefresh(BaseModel):
+    """Payload per /auth/refresh."""
+    
+    refresh_token: str
+
+
+class LoginResponse(BaseModel):
+    """Risposta del login: utente + token."""
+    
+    user: UserResponse
+    tokens: TokenPair
+
+
+class RegisterResponse(BaseModel):
+    """Risposta del register: utente + token (auto-login)."""
+    
+    user: UserResponse
+    tokens: TokenPair
