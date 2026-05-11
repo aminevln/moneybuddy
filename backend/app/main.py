@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.session import get_db, close_db_connections
+from app.api import auth
 
 
 @asynccontextmanager
@@ -53,7 +54,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+# ============================================================
+# ROUTERS
+# ============================================================
+app.include_router(auth.router)
 
 # ============================================================
 # ENDPOINTS
