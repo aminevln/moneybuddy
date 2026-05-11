@@ -5,7 +5,7 @@
 
 COMPOSE = docker compose -f infra/docker-compose.yml
 
-.PHONY: help up down restart logs ps psql redis-cli clean
+.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell
 
 help:  ## Mostra questo aiuto
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -33,3 +33,9 @@ redis-cli:  ## Apre una shell Redis
 
 clean:  ## ATTENZIONE: ferma tutto e cancella anche i volumi (perdi i dati DB)
 	$(COMPOSE) down -v
+
+backend:  ## Avvia il backend FastAPI in modalità dev
+	cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+backend-shell:  ## Apre una shell Python dentro il virtual environment del backend
+	cd backend && uv run python
