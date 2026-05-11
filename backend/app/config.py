@@ -42,6 +42,23 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
     # ============================================================
+    # SECURITY / AUTH
+    # ============================================================
+    # Chiave segreta usata per firmare i JWT.
+    # In produzione DEVE essere un valore casuale e segreto,
+    # passato via variabile d'ambiente.
+    # In dev usiamo un default fisso per comodità.
+    secret_key: str = "dev-secret-change-me-in-production-please"
+    
+    # Algoritmo di firma JWT
+    jwt_algorithm: str = "HS256"
+    
+    # Durata del access token (breve: 15 min)
+    access_token_expire_minutes: int = 15
+    
+    # Durata del refresh token (lunga: 30 giorni)
+    refresh_token_expire_days: int = 30
+    # ============================================================
     # CONFIGURAZIONE PYDANTIC
     # ============================================================
     model_config = SettingsConfigDict(
