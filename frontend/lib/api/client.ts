@@ -105,5 +105,10 @@ export async function apiFetch<T>(
     );
   }
   
+  // 204 No Content (DELETE) o body completamente vuoto: niente da parsare
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+  
   return response.json() as Promise<T>;
 }

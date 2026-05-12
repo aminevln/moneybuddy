@@ -5,13 +5,14 @@
  *
  * Mostra:
  * - Stato live dei servizi backend
- * - Se loggato: nome utente + bottone logout
- * - Se non loggato: bottone "Accedi" / "Registrati"
+ * - Widget "Disponibile" (totale spendibile)
+ * - Link rapidi alle pagine principali
  */
 
 import Link from "next/link";
 
 import { HealthStatus } from "@/components/HealthStatus";
+import { BalanceSummary } from "@/components/accounts/BalanceSummary";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth/context/useAuth";
 
@@ -36,27 +37,39 @@ export default function HomePage() {
         )}
         
         {status === "authenticated" && user && (
-          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-            <p className="text-emerald-400 text-sm mb-3">
-              Ciao <span className="font-semibold">{user.display_name}</span>!
-            </p>
-            <div className="flex flex-wrap gap-3 text-sm">
-              <Link href="/me" className="text-emerald-400 hover:text-emerald-300 underline">
-                Profilo
-              </Link>
-              <span className="text-slate-600">·</span>
-              <Link href="/settings/categories" className="text-emerald-400 hover:text-emerald-300 underline">
-                Categorie
-              </Link>
-              <span className="text-slate-600">·</span>
-              <button
-                onClick={logout}
-                className="text-slate-400 hover:text-slate-200 underline"
-              >
-                Esci
-              </button>
+          <>
+            {/* Saluto */}
+            <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+              <p className="text-emerald-400 text-sm mb-3">
+                Ciao <span className="font-semibold">{user.display_name}</span>!
+              </p>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <Link href="/me" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Profilo
+                </Link>
+                <span className="text-slate-600">·</span>
+                <Link href="/settings/accounts" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Account
+                </Link>
+                <span className="text-slate-600">·</span>
+                <Link href="/settings/categories" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Categorie
+                </Link>
+                <span className="text-slate-600">·</span>
+                <button
+                  onClick={logout}
+                  className="text-slate-400 hover:text-slate-200 underline"
+                >
+                  Esci
+                </button>
+              </div>
             </div>
-          </div>
+            
+            {/* Widget disponibile */}
+            <div className="mb-6">
+              <BalanceSummary />
+            </div>
+          </>
         )}
         
         {status === "unauthenticated" && (
