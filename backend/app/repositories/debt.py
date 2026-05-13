@@ -19,7 +19,7 @@ class DebtRepository:
         result = await self.db.execute(
             select(Debt)
             .where(Debt.user_id == user_id)
-            .order_by(Debt.created_at.desc())  # più recenti prima
+            .order_by(Debt.creditor)
         )
         return list(result.scalars().all())
     
@@ -37,14 +37,12 @@ class DebtRepository:
     async def create(self, payload: DebtCreate, user_id: UUID) -> Debt:
         debt = Debt(
             user_id=user_id,
-            name=payload.name,
             creditor=payload.creditor,
-            initial_amount=payload.initial_amount,
-            current_balance=payload.current_balance,
-            monthly_payment=payload.monthly_payment,
+            original_amount=payload.original_amount,
+            remaining_amount=payload.remaining_amount,
             interest_rate=payload.interest_rate,
-            start_date=payload.start_date,
-            end_date=payload.end_date,
+            monthly_payment=payload.monthly_payment,
+            due_date=payload.due_date,
             notes=payload.notes,
         )
         self.db.add(debt)

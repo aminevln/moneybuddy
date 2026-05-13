@@ -39,8 +39,7 @@ class UserAssetRepository:
             user_id=user_id,
             name=payload.name,
             asset_type=payload.asset_type,
-            details=payload.details,
-            asset_metadata=payload.metadata,
+            attributes=payload.attributes,
         )
         self.db.add(asset)
         await self.db.flush()
@@ -51,8 +50,6 @@ class UserAssetRepository:
         self, asset: UserAsset, payload: UserAssetUpdate
     ) -> UserAsset:
         update_data = payload.model_dump(exclude_unset=True)
-        if "metadata" in update_data:
-            update_data["asset_metadata"] = update_data.pop("metadata")
         for key, value in update_data.items():
             setattr(asset, key, value)
         await self.db.flush()

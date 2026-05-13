@@ -35,15 +35,28 @@ async def test_create_asset(client: AsyncClient):
         json={
             "name": "Felix il gatto",
             "asset_type": "pet",
-            "details": "Gatto persiano, 3 anni",
-            "metadata": {"vet": "Dr. Rossi"},
+            "attributes": {"breed": "Persian", "age": 3, "vet": "Dr. Rossi"},
         },
         headers=headers,
     )
     assert response.status_code == 201
     body = response.json()
     assert body["name"] == "Felix il gatto"
-    assert body["metadata"]["vet"] == "Dr. Rossi"
+    assert body["asset_type"] == "pet"
+    assert body["attributes"]["vet"] == "Dr. Rossi"
+
+
+@pytest.mark.asyncio
+async def test_create_asset_minimal(client: AsyncClient):
+    """Senza attributes deve usare il default empty dict."""
+    headers = await _auth_headers(client)
+    response = await client.post(
+        "/assets",
+        json={"name": "Auto", "asset_type": "car"},
+        headers=headers,
+    )
+    assert response.status_code == 201
+    assert response.json()["attributes"] == {}
 
 
 @pytest.mark.asyncio
@@ -58,11 +71,13 @@ async def test_update_asset(client: AsyncClient):
     
     response = await client.patch(
         f"/assets/{asset_id}",
-        json={"details": "Aggiunti dettagli"},
+        json={"name": "Fiat Panda", "attributes": {"plate": "AB123CD"}},
         headers=headers,
     )
     assert response.status_code == 200
-    assert response.json()["details"] == "Aggiunti dettagli"
+    body = response.json()
+    assert body["name"] == "Fiat Panda"
+    assert body["attributes"]["plate"] == "AB123CD"
 
 
 @pytest.mark.asyncio

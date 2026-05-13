@@ -34,19 +34,50 @@ async def test_create_debt(client: AsyncClient):
     response = await client.post(
         "/debts",
         json={
-            "name": "Mutuo",
-            "creditor": "Intesa",
-            "initial_amount": 100000,
-            "current_balance": 80000,
+            "creditor": "Intesa Sanpaolo",
+            "original_amount": 100000,
+            "remaining_amount": 80000,
             "monthly_payment": 500,
-            "interest_rate": 2.5,
+            "interest_rate": 0.025,
+            "notes": "Mutuo prima casa",
         },
         headers=headers,
     )
     assert response.status_code == 201
     body = response.json()
-    assert body["name"] == "Mutuo"
-    assert Decimal(body["initial_amount"]) == Decimal("100000")
+    assert body["creditor"] == "Intesa Sanpaolo"
+    assert Decimal(body["original_amount"]) == Decimal("100000")
+    assert Decimal(body["remaining_amount"]) == Decimal("80000")
+
+
+@pytest.mark.asyncio
+async def test_create_debt_minimal(client: AsyncClient):
+    """Solo i campi obbligatori: creditor, original_amount, remaining_amount."""
+    headers = await _auth_headers(client)
+    response = await client.post(
+        "/debts",
+        json={
+            "creditor": "Famiglia",
+            "original_amount": 500,
+            "remaining_amount": 500,
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201
+
+
+@pytest.mark.asyncio
+async def test_create_debt_missing_creditor_returns_422(client: AsyncClient):
+    headers = await _auth_headers(client)
+    response = await client.post(
+        "/debts",
+        json={
+            "original_amount": 100,
+            "remaining_amount": 100,
+        },
+        headers=headers,
+    )
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -55,9 +86,9 @@ async def test_create_debt_negative_amount_returns_422(client: AsyncClient):
     response = await client.post(
         "/debts",
         json={
-            "name": "Test",
-            "initial_amount": -100,
-            "current_balance": 0,
+            "creditor": "Test",
+            "original_amount": -100,
+            "remaining_amount": 0,
         },
         headers=headers,
     )
@@ -66,15 +97,15 @@ async def test_create_debt_negative_amount_returns_422(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_create_debt_invalid_interest_rate_returns_422(client: AsyncClient):
-    """interest_rate deve essere tra 0 e 100."""
+    """interest_rate deve essere tra 0 e 9.9999."""
     headers = await _auth_headers(client)
     response = await client.post(
         "/debts",
         json={
-            "name": "Test",
-            "initial_amount": 100,
-            "current_balance": 100,
-            "interest_rate": 150,  # > 100
+            "creditor": "Test",
+            "original_amount": 100,
+            "remaining_amount": 100,
+            "interest_rate": 15,   # ben oltre 9.9999
         },
         headers=headers,
     )
@@ -82,14 +113,15 @@ async def test_create_debt_invalid_interest_rate_returns_422(client: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_update_debt_current_balance(client: AsyncClient):
+async def test_update_debt_remaining_amount(client: AsyncClient):
+    """Test del caso comune: l'utente paga una rata, aggiorna il residuo."""
     headers = await _auth_headers(client)
     create = await client.post(
         "/debts",
         json={
-            "name": "Mutuo",
-            "initial_amount": 100000,
-            "current_balance": 100000,
+            "creditor": "Banca",
+            "original_amount": 100000,
+            "remaining_amount": 100000,
         },
         headers=headers,
     )
@@ -97,11 +129,11 @@ async def test_update_debt_current_balance(client: AsyncClient):
     
     response = await client.patch(
         f"/debts/{debt_id}",
-        json={"current_balance": 95000},
+        json={"remaining_amount": 95000},
         headers=headers,
     )
     assert response.status_code == 200
-    assert Decimal(response.json()["current_balance"]) == Decimal("95000")
+    assert Decimal(response.json()["remaining_amount"]) == Decimal("95000")
 
 
 @pytest.mark.asyncio
@@ -110,9 +142,9 @@ async def test_delete_debt(client: AsyncClient):
     create = await client.post(
         "/debts",
         json={
-            "name": "Da eliminare",
-            "initial_amount": 1000,
-            "current_balance": 1000,
+            "creditor": "Test",
+            "original_amount": 1000,
+            "remaining_amount": 1000,
         },
         headers=headers,
     )
