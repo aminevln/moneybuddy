@@ -17,6 +17,7 @@ import { BalanceSummary } from "@/components/accounts/BalanceSummary";
 import { RecentTransactionsWidget } from "@/components/transactions/RecentTransactionsWidget";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth/context/useAuth";
+import { BudgetsWidget } from "@/components/budgets/BudgetsWidget";
 
 
 export default function HomePage() {
@@ -52,6 +53,10 @@ export default function HomePage() {
                   Transazioni
                 </Link>
                 <span className="text-slate-600">·</span>
+                <Link href="/budgets" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Budget
+                </Link>
+                <span className="text-slate-600">·</span>
                 <Link href="/settings/accounts" className="text-emerald-400 hover:text-emerald-300 underline">
                   Account
                 </Link>
@@ -81,7 +86,9 @@ export default function HomePage() {
             <div className="mb-4">
               <BalanceSummary />
             </div>
-            
+            <div className="mb-4">
+              <BudgetsWidget />
+            </div>
             {/* Widget Ultime transazioni */}
             <div className="mb-6">
               <RecentTransactionsWidget />
