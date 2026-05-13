@@ -60,6 +60,14 @@ export default function HomePage() {
                   Categorie
                 </Link>
                 <span className="text-slate-600">·</span>
+                <Link href="/settings/assets" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Asset
+                </Link>
+                <span className="text-slate-600">·</span>
+                <Link href="/settings/debts" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Debiti
+                </Link>
+                <span className="text-slate-600">·</span>
                 <button
                   onClick={logout}
                   className="text-slate-400 hover:text-slate-200 underline"
