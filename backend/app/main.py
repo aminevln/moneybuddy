@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.db.session import get_db, close_db_connections
-from app.api import accounts, assets, auth, budgets, categories, debts, transactions
+from app.api import accounts, analytics, assets, auth, budgets, categories, debts, transactions
 
 
 @asynccontextmanager
@@ -77,6 +77,7 @@ app.include_router(transactions.router)
 app.include_router(assets.router)
 app.include_router(debts.router)
 app.include_router(budgets.router)
+app.include_router(analytics.router)
 
 # ============================================================
 # ENDPOINTS
