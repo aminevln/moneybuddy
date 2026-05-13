@@ -10,6 +10,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "email-validator>=2.3.0",
     "fastapi>=0.136.1",
+    "google-genai>=2.2.0",
     "httpx>=0.28.1",
     "passlib[argon2]>=1.7.4",
     "pgvector[asyncpg]>=0.4.2",

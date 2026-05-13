@@ -42,6 +42,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
     # ============================================================
+    # AI / LLM
+    # ============================================================
+    google_api_key: str
+    
+    # Modelli Gemini in uso
+    gemini_main_model: str = "gemini-2.5-flash"          # chat principale
+    gemini_fast_model: str = "gemini-2.5-flash-lite"     # intent, classification, embedding tasks
+    gemini_embedding_model: str = "gemini-embedding-001"
+    # ============================================================
     # SECURITY / AUTH
     # ============================================================
     # Chiave segreta usata per firmare i JWT.

@@ -36,6 +36,13 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             print(f"⚠️  Seed failed: {e}")
     
+    from app.ai.client import init_gemini_client
+    try:
+        init_gemini_client()
+        print(f"🤖 Gemini client initialized")
+    except Exception as e:
+        print(f"⚠️  Gemini init failed: {e}")
+    
     print(f"🔌 Connected to database (lazy: il pool si apre alla prima query)")
     yield
     print(f"👋 Shutting down {settings.app_name}")
