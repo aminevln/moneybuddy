@@ -5,16 +5,19 @@
  *
  * Mostra:
  * - Stato live dei servizi backend
+ * - Saluto + link rapidi
  * - Widget "Disponibile" (totale spendibile)
- * - Link rapidi alle pagine principali
+ * - Widget "Ultime transazioni"
  */
 
 import Link from "next/link";
 
 import { HealthStatus } from "@/components/HealthStatus";
 import { BalanceSummary } from "@/components/accounts/BalanceSummary";
+import { RecentTransactionsWidget } from "@/components/transactions/RecentTransactionsWidget";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth/context/useAuth";
+
 
 export default function HomePage() {
   const { user, status, logout } = useAuth();
@@ -22,14 +25,11 @@ export default function HomePage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-6">
       <div className="max-w-md w-full bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-bold text-white mb-2">
-          MoneyBuddy
-        </h1>
+        <h1 className="text-3xl font-bold text-white mb-2">MoneyBuddy</h1>
         <p className="text-slate-400 mb-6">
           Il tuo assistente finanziario con AI
         </p>
         
-        {/* Stato auth */}
         {status === "loading" && (
           <div className="mb-6 p-3 bg-slate-900/50 rounded-lg text-slate-400 text-sm">
             Verifico sessione...
@@ -46,6 +46,10 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-3 text-sm">
                 <Link href="/me" className="text-emerald-400 hover:text-emerald-300 underline">
                   Profilo
+                </Link>
+                <span className="text-slate-600">·</span>
+                <Link href="/transactions" className="text-emerald-400 hover:text-emerald-300 underline">
+                  Transazioni
                 </Link>
                 <span className="text-slate-600">·</span>
                 <Link href="/settings/accounts" className="text-emerald-400 hover:text-emerald-300 underline">
@@ -65,9 +69,14 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Widget disponibile */}
-            <div className="mb-6">
+            {/* Widget Disponibile */}
+            <div className="mb-4">
               <BalanceSummary />
+            </div>
+            
+            {/* Widget Ultime transazioni */}
+            <div className="mb-6">
+              <RecentTransactionsWidget />
             </div>
           </>
         )}
