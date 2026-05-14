@@ -108,6 +108,7 @@ export default function HomePage() {
 
 function NavLinks({ logout }: { logout: () => void }) {
   const links: Array<{ href: string; label: string }> = [
+    { href: "/chat", label: "Chat" },
     { href: "/me", label: "Profilo" },
     { href: "/transactions", label: "Transazioni" },
     { href: "/budgets", label: "Budget" },
