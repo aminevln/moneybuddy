@@ -44,12 +44,12 @@ class ChatSendResponse(BaseModel):
     """
     Risposta dopo aver inviato un messaggio.
     
-    Contiene SIA il messaggio utente salvato SIA la risposta dell'AI.
-    Così il frontend in un solo POST riceve entrambi e li mostra subito.
+    user_message: il messaggio dell'utente
+    assistant_messages: 1 o più messaggi dell'AI (può proporre + testo)
     """
     
     user_message: ChatMessageResponse
-    assistant_message: ChatMessageResponse
+    assistant_messages: list[ChatMessageResponse]
 
 
 class ChatHistoryResponse(BaseModel):
@@ -57,3 +57,13 @@ class ChatHistoryResponse(BaseModel):
     
     session_id: UUID
     messages: list[ChatMessageResponse]
+
+# ============================================================
+# TOOL PROPOSAL CONFIRMATION
+# ============================================================
+
+class ProposalConfirmationResponse(BaseModel):
+    """Response dopo confirm/reject di una proposta."""
+    
+    updated_message: ChatMessageResponse
+    new_message: ChatMessageResponse

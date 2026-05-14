@@ -20,6 +20,10 @@ from app.schemas.chat import (
     ChatSendResponse,
 )
 from app.services.chat import ChatService
+from uuid import UUID
+
+from app.schemas.chat import ProposalConfirmationResponse
+from app.services.tool_proposals import ToolProposalService
 
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -29,7 +33,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
     "/messages",
     response_model=ChatSendResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Invia un messaggio in chat, ricevi la risposta di MoneyBuddy",
+    summary="Invia un messaggio in chat, ricevi 1+ risposte di MoneyBuddy",
 )
 async def send_message(
     payload: ChatMessageCreate,
@@ -38,12 +42,14 @@ async def send_message(
     gemini: GeminiClient = Depends(get_gemini_client),
 ) -> ChatSendResponse:
     service = ChatService(db, gemini)
-    user_msg, assistant_msg = await service.send_message(current_user, payload.content)
+    user_msg, assistant_msgs = await service.send_message(current_user, payload.content)
     await db.commit()
     
     return ChatSendResponse(
         user_message=ChatMessageResponse.model_validate(user_msg),
-        assistant_message=ChatMessageResponse.model_validate(assistant_msg),
+        assistant_messages=[
+            ChatMessageResponse.model_validate(m) for m in assistant_msgs
+        ],
     )
 
 
@@ -64,4 +70,41 @@ async def get_history(
     return ChatHistoryResponse(
         session_id=session.id,
         messages=[ChatMessageResponse.model_validate(m) for m in messages],
+    )
+
+@router.post(
+    "/messages/{message_id}/confirm",
+    response_model=ProposalConfirmationResponse,
+    summary="Conferma una proposta di transazione",
+)
+async def confirm_proposal(
+    message_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProposalConfirmationResponse:
+    service = ToolProposalService(db)
+    updated, new_msg = await service.confirm_proposal(current_user, message_id)
+    await db.commit()
+    return ProposalConfirmationResponse(
+        updated_message=ChatMessageResponse.model_validate(updated),
+        new_message=ChatMessageResponse.model_validate(new_msg),
+    )
+
+
+@router.post(
+    "/messages/{message_id}/reject",
+    response_model=ProposalConfirmationResponse,
+    summary="Rifiuta una proposta di transazione",
+)
+async def reject_proposal(
+    message_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProposalConfirmationResponse:
+    service = ToolProposalService(db)
+    updated, new_msg = await service.reject_proposal(current_user, message_id)
+    await db.commit()
+    return ProposalConfirmationResponse(
+        updated_message=ChatMessageResponse.model_validate(updated),
+        new_message=ChatMessageResponse.model_validate(new_msg),
     )

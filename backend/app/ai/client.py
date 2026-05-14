@@ -82,6 +82,60 @@ class GeminiClient:
             logger.warning("Gemini returned empty response")
         
         return text
+
+    async def generate_with_tools(
+        self,
+        prompt: str,
+        *,
+        system_instruction: str | None = None,
+        tools: list[Any] | None = None,
+        temperature: float = 0.7,
+        max_output_tokens: int = 2048,
+    ) -> tuple[str, list[dict]]:
+        """
+        Genera una risposta che può includere tool calls.
+        
+        Restituisce (testo, tool_calls):
+        - testo: la parte di risposta testuale (può essere vuota se solo tool calls)
+        - tool_calls: lista di dict {name, args} con le chiamate proposte dall'LLM
+        
+        Se l'LLM non chiama nessun tool, tool_calls è una lista vuota.
+        """
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+            tools=tools or [],
+        )
+        
+        try:
+            response = await self._client.aio.models.generate_content(
+                model=self.main_model,
+                contents=prompt,
+                config=config,
+            )
+        except Exception as e:
+            logger.exception("Gemini generate_with_tools failed")
+            raise GeminiError(f"Errore comunicazione con Gemini: {e}") from e
+        
+        # Estrai testo e tool calls dalla response
+        text_parts: list[str] = []
+        tool_calls: list[dict] = []
+        
+        candidate = response.candidates[0] if response.candidates else None
+        if candidate and candidate.content and candidate.content.parts:
+            for part in candidate.content.parts:
+                if hasattr(part, "text") and part.text:
+                    text_parts.append(part.text)
+                if hasattr(part, "function_call") and part.function_call:
+                    fc = part.function_call
+                    tool_calls.append({
+                        "name": fc.name,
+                        "args": dict(fc.args) if fc.args else {},
+                    })
+        
+        text = "".join(text_parts)
+        return text, tool_calls
     
     # ============================================================
     # EMBEDDINGS
