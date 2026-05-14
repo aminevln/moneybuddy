@@ -32,3 +32,9 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "ruff>=0.15.12",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "gemini: tests that require real Gemini API (skipped by default)",
+]

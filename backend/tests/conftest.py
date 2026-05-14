@@ -40,3 +40,24 @@ async def client() -> AsyncClient:
     
     # Cleanup: chiudi il pool di connessioni per evitare task pendenti
     await engine.dispose()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def initialize_gemini_for_tests():
+    """
+    Inizializza il client Gemini globale all'inizio della test session.
+    
+    Funziona per:
+    - Test marcati 'gemini': lo usano davvero per chiamate API reali
+    - Test normali: l'init avviene ma non viene mai chiamato → no-op
+    
+    Se manca GOOGLE_API_KEY (es. ambienti CI senza secret), l'init
+    fallisce silenziosamente. I test normali continuano a passare;
+    quelli "gemini" sarebbero comunque saltati di default con `make test`.
+    """
+    from app.ai.client import init_gemini_client
+    try:
+        init_gemini_client()
+    except Exception as e:
+        print(f"⚠️  Gemini init failed in tests: {e}")
+    yield

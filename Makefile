@@ -5,7 +5,7 @@
 
 COMPOSE = docker compose -f infra/docker-compose.yml
 
-.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migration migration-empty migration-down migration-history frontend test seed
+.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migration migration-empty migration-down migration-history frontend test test-gemini test-all seed
 
 help:  ## Mostra questo aiuto
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -43,7 +43,13 @@ backend-shell:  ## Apre una shell Python dentro il virtual environment del backe
 frontend:  ## Avvia il frontend Next.js in dev mode
 	cd frontend && pnpm dev
 
-test:  ## Esegue tutti i test del backend
+test:  ## Run fast tests (excludes Gemini API tests)
+	cd backend && uv run pytest -v -m "not gemini"
+
+test-gemini:  ## Run only Gemini API tests (slow, uses real API)
+	cd backend && uv run pytest -v -m "gemini"
+
+test-all:  ## Run ALL tests including Gemini
 	cd backend && uv run pytest -v
 
 seed:  ## Esegue il seed delle categorie di sistema
