@@ -65,7 +65,7 @@ export function useSendMessageMutation() {
       if (previous) {
         // Crea un fake user message con id temporaneo
         const optimisticUserMsg: ChatMessage = {
-          id: `temp-${Date.now()}`,
+          id: `temp-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`}`,
           session_id: previous.session_id,
           role: "user",
           content: payload.content,

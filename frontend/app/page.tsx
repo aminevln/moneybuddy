@@ -18,6 +18,7 @@ import { RecentTransactionsWidget } from "@/components/transactions/RecentTransa
 import { Button } from "@/components/ui/Button";
 import { useAnalyticsOverviewQuery } from "@/lib/api/analytics";
 import { useAuth } from "@/lib/auth/context/useAuth";
+import { AskMoneyBuddyWidget } from "@/components/chat/AskMoneyBuddyWidget";
 
 
 export default function HomePage() {
@@ -70,6 +71,8 @@ export default function HomePage() {
               </p>
               <NavLinks logout={logout} />
             </div>
+            {/* Chiedi a MoneyBuddy */}
+            <AskMoneyBuddyWidget />
             
             {/* Riga 1: Balance + Budgets */}
             <div className="grid sm:grid-cols-2 gap-4">

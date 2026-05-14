@@ -3,16 +3,13 @@
 /**
  * Pagina chat principale.
  *
- * Layout:
- * - Header con titolo e link home
- * - Lista messaggi scrollabile (auto-scroll al fondo)
- * - Input fisso in basso
- *
- * Pattern: full-height layout con flex column.
+ * Accetta ?q=... per pre-popolare e inviare automaticamente un messaggio.
+ * Wrappata in Suspense per useSearchParams in build prod.
  */
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { ChatBubble } from "@/components/chat/ChatBubble";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -24,12 +21,48 @@ import {
 
 
 export default function ChatPage() {
+  return (
+    <Suspense fallback={<ChatLoading />}>
+      <ChatContent />
+    </Suspense>
+  );
+}
+
+
+function ChatLoading() {
+  return (
+    <main className="flex flex-col h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
+        Caricamento chat...
+      </div>
+    </main>
+  );
+}
+
+
+function ChatContent() {
   const { data: history, isLoading, error } = useChatHistoryQuery();
   const sendMutation = useSendMessageMutation();
+  const searchParams = useSearchParams();
+  const router = useRouter();          // ← NUOVA RIGA
+  const autoSentQueryRef = useRef<string | null>(null);
+  
+  // Se arriviamo con ?q=..., invia subito quel messaggio (una sola volta)
+  // Se arriviamo con ?q=..., invia subito quel messaggio (una sola volta)
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (!q || !history) return;
+    // Guard sincrono via ref: se abbiamo già processato questo `q`, esci subito
+    if (autoSentQueryRef.current === q) return;
+    if (sendMutation.isPending) return;
+    
+    autoSentQueryRef.current = q;     // marca PRIMA di mutate, no race possibile
+    sendMutation.mutate({ content: q });
+    router.replace("/chat");
+  }, [searchParams, history, sendMutation, router]);
   
   // Auto-scroll quando arriva un nuovo messaggio
   const scrollRef = useRef<HTMLDivElement>(null);
-  
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [history?.messages.length, sendMutation.isPending]);
@@ -39,7 +72,7 @@ export default function ChatPage() {
   }
   
   const messages = history?.messages ?? [];
-  const isEmpty = !isLoading && messages.length === 0;
+  const isEmpty = !isLoading && messages.length === 0 && !sendMutation.isPending;
   
   return (
     <main className="flex flex-col h-screen bg-gradient-to-br from-slate-900 to-slate-800">
@@ -81,13 +114,12 @@ export default function ChatPage() {
           
           {isEmpty && <EmptyState />}
           
-          {messages.map((m) => (
+          {dedupeById(messages).map((m) => (
             <ChatBubble key={m.id} message={m} />
           ))}
           
           {sendMutation.isPending && <TypingIndicator />}
           
-          {/* Anchor per auto-scroll */}
           <div ref={scrollRef} />
         </div>
       </div>
@@ -101,7 +133,21 @@ export default function ChatPage() {
   );
 }
 
-
+/**
+ * Rimuove duplicati per id mantenendo il primo apparso.
+ * Difesa contro race conditions di optimistic update.
+ */
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
 // ============================================================
 // EMPTY STATE
 // ============================================================
@@ -139,8 +185,6 @@ function EmptyState() {
 
 
 function SuggestionCard({ text }: { text: string }) {
-  // Per ora i suggerimenti sono statici (decorativi).
-  // Click → pre-popolerebbe l'input, ma serve un ref globale → lo facciamo dopo se serve.
   return (
     <div className="px-3 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm text-slate-300">
       "{text}"
