@@ -3,6 +3,7 @@ import type {
   ChatHistoryResponse,
   ChatMessageCreatePayload,
   ChatSendResponse,
+  ProposalConfirmationResponse 
 } from "./types";
 
 
@@ -18,4 +19,23 @@ export async function sendChatMessage(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function confirmProposal(
+  messageId: string
+): Promise<ProposalConfirmationResponse> {
+  return apiFetch<ProposalConfirmationResponse>(
+    `/chat/messages/${messageId}/confirm`,
+    { method: "POST" }
+  );
+}
+
+
+export async function rejectProposal(
+  messageId: string
+): Promise<ProposalConfirmationResponse> {
+  return apiFetch<ProposalConfirmationResponse>(
+    `/chat/messages/${messageId}/reject`,
+    { method: "POST" }
+  );
 }

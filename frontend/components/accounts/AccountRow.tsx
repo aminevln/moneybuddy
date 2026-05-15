@@ -27,7 +27,9 @@ export function AccountRow({ account, onEdit }: AccountRowProps) {
     try {
       await deleteMutation.mutateAsync(account.id);
     } catch (err) {
-      alert("Errore durante l'eliminazione");
+      const message =
+        err instanceof Error ? err.message : "Errore durante l'eliminazione";
+      alert(message);
       console.error(err);
     }
   }

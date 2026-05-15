@@ -5,7 +5,7 @@
 
 COMPOSE = docker compose -f infra/docker-compose.yml
 
-.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migration migration-empty migration-down migration-history frontend test test-gemini test-all seed
+.PHONY: help up down restart logs ps psql redis-cli clean backend backend-shell migrate migrate-down migration migration-empty migration-down migration-history frontend test test-gemini test-all seed
 
 help:  ## Mostra questo aiuto
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -54,3 +54,16 @@ test-all:  ## Run ALL tests including Gemini
 
 seed:  ## Esegue il seed delle categorie di sistema
 	cd backend && uv run python -m scripts.seed
+
+migrate:  ## Applica le migration pendenti (upgrade head)
+	cd backend && uv run alembic upgrade head
+
+migrate-down:  ## Rollback ultima migration (downgrade -1)
+	cd backend && uv run alembic downgrade -1
+
+migration:  ## Crea una nuova migration. Uso: make migration name=descrizione
+	@if [ -z "$(name)" ]; then \
+		echo "Errore: specifica il nome. Uso: make migration name=descrizione"; \
+		exit 1; \
+	fi
+	cd backend && uv run alembic revision --autogenerate -m "$(name)"

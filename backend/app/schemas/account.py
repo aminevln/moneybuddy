@@ -28,7 +28,6 @@ class AccountCreate(BaseModel):
 
 class AccountUpdate(BaseModel):
     """Payload PATCH. Tutti opzionali."""
-    
     name: str | None = Field(default=None, min_length=1, max_length=100)
     is_spendable: bool | None = None
     # Nota: NON permettiamo di cambiare `type` né `current_balance`.

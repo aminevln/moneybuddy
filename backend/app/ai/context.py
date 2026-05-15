@@ -41,6 +41,19 @@ async def build_chat_context(
         k: str(v) if hasattr(v, "is_finite") else v
         for k, v in accounts_summary.items()
     }
+
+    # Lista esplicita degli account con UUID (servono all'AI per propose_transaction)
+    accounts = await account_repo.list_for_user(user.id)
+    accounts_list = [
+        {
+            "id": str(a.id),
+            "name": a.name,
+            "type": a.type.value,
+            "is_spendable": a.is_spendable,
+            "current_balance": str(a.current_balance),
+        }
+        for a in accounts
+    ]
     
     # Budget attivi
     budget_repo = BudgetRepository(db)
@@ -73,6 +86,13 @@ async def build_chat_context(
     cat_repo = CategoryRepository(db)
     categories = await cat_repo.list_for_user(user.id)
     cat_map = {c.id: c.name for c in categories}
+    categories_list = [
+        {
+            "id": str(c.id),
+            "name": c.name,
+        }
+        for c in categories
+    ]
     
     recent_transactions = [
         {
@@ -103,6 +123,8 @@ async def build_chat_context(
         "display_name": user.display_name,
         "currency": user.currency,
         "accounts_summary": accounts_summary_serializable,
+        "accounts_list": accounts_list,
+        "categories_list": categories_list,
         "active_budgets": active_budgets_serializable,
         "recent_transactions": recent_transactions,
         "relevant_memories": relevant_memories,

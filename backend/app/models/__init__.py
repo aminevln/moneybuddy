@@ -13,6 +13,7 @@ from app.models.debt import Debt
 from app.models.asset import UserAsset
 from app.models.chat import ChatSession, ChatMessage
 from app.models.memory import MemoryChunk
+from app.models.password_reset import PasswordResetToken  # noqa: F401
 
 __all__ = [
     "User",
@@ -26,4 +27,5 @@ __all__ = [
     "ChatSession",
     "ChatMessage",
     "MemoryChunk",
+    "PasswordResetToken",
 ]

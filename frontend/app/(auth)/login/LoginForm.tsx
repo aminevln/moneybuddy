@@ -100,12 +100,25 @@ export function LoginForm() {
         </Button>
       </form>
       
-      <p className="text-sm text-slate-400 text-center mt-6">
-        Non hai un account?{" "}
-        <Link href="/register" className="text-emerald-400 hover:text-emerald-300">
-          Registrati
-        </Link>
-      </p>
+      <div className="space-y-2 mt-4 text-center text-sm">
+        <div>
+          <Link
+            href="/forgot-password"
+            className="text-slate-400 hover:text-slate-200 underline"
+          >
+            Password dimenticata?
+          </Link>
+        </div>
+        <div className="text-slate-400">
+          Non hai un account?{" "}
+          <Link
+            href="/register"
+            className="text-emerald-400 hover:text-emerald-300"
+          >
+            Registrati
+          </Link>
+        </div>
+      </div>
     </Card>
   );
 }

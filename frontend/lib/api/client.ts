@@ -98,11 +98,17 @@ export async function apiFetch<T>(
     } catch {
       // body non-JSON, ignora
     }
-    throw new ApiError(
-      `Request failed: ${response.status} ${response.statusText}`,
-      response.status,
-      detail
-    );
+    let humanMessage = `Request failed: ${response.status} ${response.statusText}`;
+    if (detail) {
+      if (typeof detail === "string") {
+        humanMessage = detail;
+      } else if (typeof detail === "object" && detail !== null && "detail" in detail) {
+        const inner = (detail as { detail: unknown }).detail;
+        if (typeof inner === "string") humanMessage = inner;
+      }
+    }
+    
+    throw new ApiError(humanMessage, response.status, detail);
   }
   
   // 204 No Content (DELETE) o body completamente vuoto: niente da parsare

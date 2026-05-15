@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * Singola "bolla" di un messaggio in chat.
+ * Singola bolla messaggio.
  *
- * User: bolla a destra, sfondo emerald
- * Assistant: bolla a sinistra, sfondo slate
- *
- * Mostra anche timestamp se hover.
+ * Decide il render:
+ * - Se è una proposta di transazione → delega a ProposalCard
+ * - Altrimenti → bolla normale (user destra emerald, assistant sinistra slate)
  */
 
-import type { ChatMessage } from "@/lib/api/chat";
+import { isTransactionProposal, type ChatMessage } from "@/lib/api/chat";
+import { ProposalCard } from "./ProposalCard";
 
 
 interface ChatBubbleProps {
@@ -17,8 +17,13 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message }: ChatBubbleProps) {
-  const isUser = message.role === "user";
+  // Se è una proposta, usa il componente speciale
+  if (isTransactionProposal(message)) {
+    return <ProposalCard message={message} />;
+  }
   
+  // Altrimenti, bolla normale
+  const isUser = message.role === "user";
   const timeLabel = formatBubbleTime(message.created_at);
   
   return (

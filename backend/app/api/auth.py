@@ -32,6 +32,13 @@ from app.schemas.user import (
     UserResponse,
 )
 
+from app.schemas.auth import (
+    PasswordResetConfirm,
+    PasswordResetRequest,
+    PasswordResetResponse,
+)
+from app.services.password_reset import PasswordResetService
+
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -102,6 +109,54 @@ async def login(
         tokens=_build_token_pair(user),
     )
 
+# ============================================================
+# PASSWORD RESET
+# ============================================================
+
+@router.post(
+    "/password-reset/request",
+    response_model=PasswordResetResponse,
+    summary="Richiedi un reset password (genera token, invia email in prod)",
+)
+async def request_password_reset(
+    payload: PasswordResetRequest,
+    db: AsyncSession = Depends(get_db),
+) -> PasswordResetResponse:
+    service = PasswordResetService(db)
+    await service.request_reset(payload.email)
+    await db.commit()
+    
+    # Anti-enumeration: stesso messaggio per email esistente e non
+    return PasswordResetResponse(
+        message=(
+            "Se l'email è registrata, riceverai a breve un link per il reset. "
+            "Controlla anche la cartella spam."
+        )
+    )
+
+
+@router.post(
+    "/password-reset/confirm",
+    response_model=PasswordResetResponse,
+    summary="Conferma reset password con token + nuova password",
+)
+async def confirm_password_reset(
+    payload: PasswordResetConfirm,
+    db: AsyncSession = Depends(get_db),
+) -> PasswordResetResponse:
+    service = PasswordResetService(db)
+    try:
+        await service.confirm_reset(payload.token, payload.new_password)
+        await db.commit()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
+    
+    return PasswordResetResponse(
+        message="Password aggiornata con successo. Puoi accedere con la nuova password."
+    )
 
 # ============================================================
 # REFRESH

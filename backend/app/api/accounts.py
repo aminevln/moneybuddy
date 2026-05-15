@@ -165,7 +165,7 @@ async def update_account(
 @router.delete(
     "/{account_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Elimina un account",
+    summary="Elimina un account (solo se senza transazioni)",
 )
 async def delete_account(
     account_id: UUID,
@@ -175,12 +175,26 @@ async def delete_account(
     repo = AccountRepository(db)
     account = await repo.get_by_id_for_user(account_id, current_user.id)
     if account is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account non trovato",
-        )
+        raise HTTPException(status_code=404, detail="Account non trovato")
     
-    # TODO 3.C: verifica che non ci siano transazioni associate
+    # Pre-check: ci sono transazioni? Non possiamo eliminare.
+    from sqlalchemy import func, select
+    from app.models.transaction import Transaction
+    
+    result = await db.execute(
+        select(func.count(Transaction.id))
+        .where(Transaction.account_id == account_id)
+    )
+    txn_count = result.scalar_one()
+    
+    if txn_count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Impossibile eliminare: questo account ha {txn_count} "
+                f"transazione/i collegate. Puoi disattivarlo invece di eliminarlo."
+            ),
+        )
     
     await repo.delete(account)
     await db.commit()
