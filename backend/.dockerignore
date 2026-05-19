@@ -1,0 +1,48 @@
+﻿# ============================================================
+# Files NON da copiare nell'immagine Docker
+# Riduce drasticamente la dimensione del build context
+# ============================================================
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+.python-version
+
+# Virtual environments
+.venv
+venv
+env
+
+# Secrets (importantissimo! mai dentro Docker image)
+.env
+.env.local
+.env.*.local
+
+# Git / VCS
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+.DS_Store
+
+# Tests
+tests
+*.test.py
+
+# Documenti
+README.md
+*.md
+docs
+
+# Logs
+*.log
