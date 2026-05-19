@@ -27,20 +27,38 @@ class Settings(BaseSettings):
     # ============================================================
     # DATABASE
     # ============================================================
-    # Stringa di connessione a Postgres in formato async (asyncpg)
-    # Formato: postgresql+asyncpg://user:password@host:port/dbname
     database_url: str = (
         "postgresql+asyncpg://moneybuddy:moneybuddy_dev_password@localhost:5432/moneybuddy"
     )
+    
     # ============================================================
     # CORS
     # ============================================================
     # Domini autorizzati a chiamare l'API.
-    # In dev: il frontend Next.js gira su localhost:3000
+    # `cors_origins` ha i default per dev locale (localhost).
+    # `extra_cors_origins` permette di aggiungere origini extra via env var
+    # senza toccare codice (es. per testare via IP da telefono o per il deploy).
+    #
+    # Formato env: EXTRA_CORS_ORIGINS=http://172.20.10.4:3000,https://myapp.vercel.app
     cors_origins: list[str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
+    extra_cors_origins: str = ""  # comma-separated, popolato da .env
+    
+    @property
+    def all_cors_origins(self) -> list[str]:
+        """
+        Restituisce la lista completa di origini CORS:
+        defaults + quelle extra parsate da `extra_cors_origins`.
+        """
+        extras = [
+            origin.strip()
+            for origin in self.extra_cors_origins.split(",")
+            if origin.strip()
+        ]
+        return self.cors_origins + extras
+    
     # ============================================================
     # AI / LLM
     # ============================================================
@@ -50,31 +68,23 @@ class Settings(BaseSettings):
     gemini_main_model: str = "gemini-2.5-flash"          # chat principale
     gemini_fast_model: str = "gemini-2.5-flash-lite"     # intent, classification, embedding tasks
     gemini_embedding_model: str = "gemini-embedding-001"
+    
     # ============================================================
     # SECURITY / AUTH
     # ============================================================
-    # Chiave segreta usata per firmare i JWT.
-    # In produzione DEVE essere un valore casuale e segreto,
-    # passato via variabile d'ambiente.
-    # In dev usiamo un default fisso per comodità.
     secret_key: str = "dev-secret-change-me-in-production-please"
-    
-    # Algoritmo di firma JWT
     jwt_algorithm: str = "HS256"
-    
-    # Durata del access token (breve: 15 min)
     access_token_expire_minutes: int = 15
-    
-    # Durata del refresh token (lunga: 30 giorni)
     refresh_token_expire_days: int = 30
+    
     # ============================================================
     # CONFIGURAZIONE PYDANTIC
     # ============================================================
     model_config = SettingsConfigDict(
-        env_file=".env",          # legge da .env nella cartella backend/
+        env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=False,     # DATABASE_URL = database_url
-        extra="ignore",           # ignora variabili extra senza errori
+        case_sensitive=False,
+        extra="ignore",
     )
 
 
@@ -82,13 +92,8 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """
     Factory che restituisce le settings.
-    
-    Usiamo @lru_cache così le settings vengono lette UNA volta sola
-    e poi cachate in memoria. Importante perché Pydantic-settings
-    legge il file .env ogni volta che istanzi Settings().
     """
     return Settings()
 
 
-# Istanza globale, importabile come `from app.config import settings`
 settings = get_settings()

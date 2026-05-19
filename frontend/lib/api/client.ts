@@ -43,28 +43,43 @@ interface ApiFetchOptions extends RequestInit {
 }
 
 
+// Timeout di default per ogni richiesta API (8 secondi).
+// Previene hang infiniti quando il backend è irraggiungibile o la connessione
+// TCP si apre ma non risponde (es. hairpin NAT su Windows con port forwarding).
+const DEFAULT_TIMEOUT_MS = 8_000;
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {}
 ): Promise<T> {
-  const { skipAuth = false, _isRetry = false, headers: customHeaders, ...rest } = options;
-  
+  const { skipAuth = false, _isRetry = false, headers: customHeaders, signal: externalSignal, ...rest } = options;
+
   const url = `${API_URL}${path}`;
-  
+
   // Headers
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(customHeaders as Record<string, string>),
   };
-  
+
   if (!skipAuth) {
     const token = getAccessToken();
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
   }
-  
-  const response = await fetch(url, { ...rest, headers });
+
+  // AbortController con timeout — se il server non risponde entro DEFAULT_TIMEOUT_MS
+  // la richiesta viene annullata e il catch in bootstrap() gestisce l'errore.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const signal = externalSignal
+    ? AbortSignal.any([controller.signal, externalSignal])
+    : controller.signal;
+
+  const response = await fetch(url, { ...rest, headers, signal }).finally(() =>
+    clearTimeout(timeoutId)
+  );
   
   // ===========================================================
   // AUTO-REFRESH sul 401

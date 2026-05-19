@@ -6,9 +6,9 @@
  * Note tecniche:
  * - `attributes` (JSON libero) viene gestito come textarea con JSON string
  * - L'utente può scrivere JSON valido o lasciare vuoto
- * - Se l'utente è alle prime armi, può lasciare attributes vuoto
  */
 
+import { Boxes, Info } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -16,13 +16,13 @@ import { FormError } from "@/components/ui/FormError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
-import { getErrorMessage } from "@/lib/api/errors";
 import {
+  type UserAsset,
   ASSET_TYPE_PRESETS,
   useCreateAssetMutation,
   useUpdateAssetMutation,
-  type UserAsset,
 } from "@/lib/api/assets";
+import { getErrorMessage } from "@/lib/api/errors";
 
 
 interface AssetFormProps {
@@ -31,7 +31,12 @@ interface AssetFormProps {
   onCancel: () => void;
 }
 
-export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
+
+export function AssetForm({
+  initial,
+  onSuccess,
+  onCancel,
+}: AssetFormProps) {
   const isEdit = !!initial;
   
   const [name, setName] = useState(initial?.name ?? "");
@@ -52,13 +57,19 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
     if (!trimmed) return {};
     try {
       const parsed = JSON.parse(trimmed);
-      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-        setError("Gli attributi devono essere un oggetto JSON tipo { \"chiave\": \"valore\" }");
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      ) {
+        setError(
+          'Gli attributi devono essere un oggetto JSON tipo { "chiave": "valore" }'
+        );
         return null;
       }
       return parsed;
     } catch {
-      setError("JSON non valido. Esempio: { \"colore\": \"rosso\" }");
+      setError('JSON non valido. Esempio: { "colore": "rosso" }');
       return null;
     }
   }
@@ -68,7 +79,7 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
     setError(null);
     
     const attributes = parseAttributes();
-    if (attributes === null) return;   // errore già settato
+    if (attributes === null) return;
     
     try {
       if (isEdit && initial) {
@@ -97,12 +108,16 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <FormError message={error} />
       
+      {/* Nome */}
       <div>
-        <Label htmlFor="asset-name">Nome</Label>
+        <Label htmlFor="asset-name" required>
+          Nome
+        </Label>
         <Input
           id="asset-name"
           type="text"
           placeholder="Es. Fiat Panda, Felix il gatto"
+          iconLeft={<Boxes className="w-4 h-4" />}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -113,8 +128,11 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
         />
       </div>
       
+      {/* Tipo */}
       <div>
-        <Label htmlFor="asset-type">Tipo</Label>
+        <Label htmlFor="asset-type" required>
+          Tipo
+        </Label>
         <Select
           id="asset-type"
           value={assetType}
@@ -129,9 +147,10 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
         </Select>
       </div>
       
+      {/* Attributes JSON */}
       <div>
         <Label htmlFor="asset-attributes">
-          Attributi (opzionale, formato JSON)
+          Attributi <span className="text-fg-muted normal-case font-normal lowercase">(opzionale)</span>
         </Label>
         <textarea
           id="asset-attributes"
@@ -141,21 +160,33 @@ export function AssetForm({ initial, onSuccess, onCancel }: AssetFormProps) {
           rows={5}
           disabled={isPending}
           className="
-            w-full px-4 py-2.5 rounded-lg
-            bg-slate-900/50 text-slate-100 font-mono text-sm
-            border border-slate-700
-            focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500
-            disabled:opacity-50
-            transition resize-y
+            w-full px-4 py-2.5 rounded-lg text-sm
+            bg-bg-surface text-fg-primary font-mono
+            border border-border
+            placeholder:text-fg-muted
+            focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-colors duration-150
+            resize-y
           "
         />
-        <p className="text-xs text-slate-500 mt-1">
-          Dati extra che l'AI userà per ragionare (es. modello auto, razza gatto).
+        <p className="flex items-start gap-1.5 text-xs text-fg-muted mt-1.5">
+          <Info className="w-3 h-3 shrink-0 mt-0.5" />
+          <span>
+            Dati extra che l'AI userà per ragionare (es. modello auto, razza
+            gatto). Formato JSON: <code className="text-fg-secondary">{`{ "chiave": "valore" }`}</code>.
+          </span>
         </p>
       </div>
       
+      {/* Actions */}
       <div className="flex gap-2 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Annulla
         </Button>
         <Button type="submit" loading={isPending}>

@@ -12,7 +12,11 @@ interface DebtProgressBarProps {
   remaining: string;
 }
 
-export function DebtProgressBar({ original, remaining }: DebtProgressBarProps) {
+
+export function DebtProgressBar({
+  original,
+  remaining,
+}: DebtProgressBarProps) {
   const orig = Number(original);
   const rem = Number(remaining);
   
@@ -22,20 +26,33 @@ export function DebtProgressBar({ original, remaining }: DebtProgressBarProps) {
   const pct = Math.min(100, Math.round((paid / orig) * 100));
   
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-slate-500">
-        <span>{formatCurrency(paid)} rimborsato</span>
-        <span>{pct}%</span>
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-baseline text-xs">
+        <span className="text-fg-secondary tabular-nums">
+          <span className="text-success font-semibold">
+            {formatCurrency(paid)}
+          </span>
+          <span className="text-fg-muted ml-1">rimborsato</span>
+        </span>
+        <span className="text-fg-primary font-semibold tabular-nums">
+          {pct}%
+        </span>
       </div>
-      <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+      <div
+        className="h-1.5 bg-bg-elevated rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div
-          className="h-full bg-emerald-500 transition-all"
+          className="h-full bg-success rounded-full transition-all duration-500 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="flex justify-between text-xs text-slate-500">
-        <span>Residuo: {formatCurrency(remaining)}</span>
-        <span>Iniziale: {formatCurrency(original)}</span>
+      <div className="flex justify-between text-[10px] text-fg-muted tabular-nums uppercase tracking-wider font-medium">
+        <span>Residuo · {formatCurrency(remaining)}</span>
+        <span>Iniziale · {formatCurrency(original)}</span>
       </div>
     </div>
   );

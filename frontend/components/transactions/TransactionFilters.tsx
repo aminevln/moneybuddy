@@ -9,10 +9,11 @@
  * - category_id
  *
  * Mancanti per ora: date range, include_voided.
- * Aggiungibili facilmente in futuro.
  */
 
-import { useAccountsQuery, ACCOUNT_TYPE_EMOJI } from "@/lib/api/accounts";
+import { Filter } from "lucide-react";
+
+import { ACCOUNT_TYPE_EMOJI, useAccountsQuery } from "@/lib/api/accounts";
 import { useCategoriesQuery } from "@/lib/api/categories";
 import {
   DIRECTION_LABELS,
@@ -26,6 +27,7 @@ interface TransactionFiltersProps {
   onChange: (filters: TransactionListFilters) => void;
 }
 
+
 export function TransactionFilters({
   filters,
   onChange,
@@ -33,7 +35,6 @@ export function TransactionFilters({
   const { data: accounts } = useAccountsQuery();
   const { data: categories } = useCategoriesQuery();
   
-  // Modifica un singolo campo, resettando la pagina a 1
   function update<K extends keyof TransactionListFilters>(
     key: K,
     value: TransactionListFilters[K] | undefined
@@ -47,13 +48,23 @@ export function TransactionFilters({
     onChange(next);
   }
   
+  const hasActiveFilters =
+    !!filters.direction || !!filters.account_id || !!filters.category_id;
+  
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="flex items-center gap-1.5 text-fg-muted shrink-0">
+        <Filter className="w-3.5 h-3.5" />
+        <span className="text-xs uppercase tracking-wider font-medium">
+          Filtri
+        </span>
+      </div>
+      
       {/* Direction */}
       <FilterSelect
         value={filters.direction ?? ""}
         onChange={(v) => update("direction", v as TxnDirection | undefined)}
-        label="Tutti"
+        label="Tutti i tipi"
         options={[
           { value: "income", label: DIRECTION_LABELS.income },
           { value: "expense", label: DIRECTION_LABELS.expense },
@@ -82,6 +93,22 @@ export function TransactionFilters({
           categories?.map((c) => ({ value: c.id, label: c.name })) ?? []
         }
       />
+      
+      {/* Reset */}
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={() =>
+            onChange({ page: filters.page ? 1 : 1, page_size: filters.page_size })
+          }
+          className="
+            ml-auto text-xs text-fg-muted hover:text-accent
+            transition-colors duration-150 underline-offset-2 hover:underline
+          "
+        >
+          Reset
+        </button>
+      )}
     </div>
   );
 }
@@ -94,23 +121,30 @@ export function TransactionFilters({
 interface FilterSelectProps {
   value: string;
   onChange: (value: string) => void;
-  label: string;       // testo per l'opzione "all"
+  label: string;
   options: Array<{ value: string; label: string }>;
 }
 
+
 function FilterSelect({ value, onChange, label, options }: FilterSelectProps) {
+  const isActive = value !== "";
+  
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="
-        px-3 py-1.5 text-sm rounded-lg
-        bg-slate-900/50 text-slate-200
-        border border-slate-700
-        focus:outline-none focus:border-emerald-500
-        transition
-        cursor-pointer
-      "
+      className={`
+        px-3 py-1.5 text-xs rounded-md font-medium
+        bg-bg-surface border transition-colors duration-150
+        focus:outline-none focus:ring-1 focus:ring-accent
+        cursor-pointer appearance-none
+        bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 fill=%22none%22 stroke=%22%23b8b8c2%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 viewBox=%220 0 24 24%22><path d=%22m6 9 6 6 6-6%22/></svg>')]
+        bg-no-repeat bg-[length:10px_10px] bg-[position:right_8px_center]
+        pr-7
+        ${isActive
+          ? "border-accent/40 text-accent hover:border-accent/60"
+          : "border-border text-fg-secondary hover:border-border-strong hover:text-fg-primary"}
+      `}
     >
       <option value="">{label}</option>
       {options.map((opt) => (

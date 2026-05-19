@@ -2,26 +2,19 @@
 
 /**
  * Card "ricca" per un budget con il suo status.
- *
- * Mostra:
- * - Nome categoria (o "Budget generico") + periodo
- * - Speso / Limite in grande
- * - Barra di progresso colorata
- * - Periodo di riferimento (data inizio/fine)
- * - Bottoni edit/delete
- *
- * Se inattivo: appare attenuato.
  */
 
-import { IconButton } from "@/components/ui/IconButton";
+import { CalendarDays, Pencil, Trash2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/Badge";
-import { formatCurrency } from "@/lib/format/currency";
+import { IconButton } from "@/components/ui/IconButton";
 import {
+  type BudgetStatus,
   getBudgetSeverity,
   PERIOD_LABELS_SHORT,
   useDeleteBudgetMutation,
-  type BudgetStatus,
 } from "@/lib/api/budgets";
+import { formatCurrency } from "@/lib/format/currency";
 import { BudgetProgressBar } from "./BudgetProgressBar";
 
 
@@ -30,11 +23,14 @@ interface BudgetCardProps {
   onEdit: (status: BudgetStatus) => void;
 }
 
+
 export function BudgetCard({ status, onEdit }: BudgetCardProps) {
   const deleteMutation = useDeleteBudgetMutation();
   
   const severity = getBudgetSeverity(status.percentage);
   const isInactive = !status.budget.is_active;
+  const remaining = Number(status.remaining);
+  const isOver = remaining < 0;
   
   async function handleDelete() {
     const label = status.category_name ?? "Budget generico";
@@ -47,79 +43,94 @@ export function BudgetCard({ status, onEdit }: BudgetCardProps) {
     }
   }
   
-  // Formatta date "dd MMM" (es. "1 mag - 31 mag")
-  const periodLabel = `${formatDateShort(status.period_start)} - ${formatDateShort(status.period_end)}`;
+  const periodLabel = `${formatDateShort(status.period_start)} – ${formatDateShort(status.period_end)}`;
   
-  // Determina colore importi
+  // Colore amount speso in base alla severità
   const spentColor = {
-    ok: "text-slate-100",
-    warning: "text-amber-400",
-    danger: "text-rose-400",
+    ok: "text-fg-primary",
+    warning: "text-warning",
+    danger: "text-danger",
   }[severity];
   
   return (
     <div
       className={`
-        p-4 bg-slate-900/50 rounded-lg space-y-3
-        ${isInactive ? "opacity-50" : ""}
+        p-5 bg-bg-elevated/50 border border-border rounded-xl space-y-4
+        transition-all duration-150
+        ${isInactive ? "opacity-50" : "hover:border-border-strong"}
       `}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-slate-100 font-medium truncate">
+            <h3 className="font-display text-base font-semibold text-fg-primary truncate">
               {status.category_name ?? "Budget generico"}
             </h3>
-            {isInactive && <Badge>inattivo</Badge>}
+            {isInactive && <Badge size="sm">inattivo</Badge>}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {PERIOD_LABELS_SHORT[status.budget.period].replace("/", "Budget ")}
-            {" · "}
-            {periodLabel}
-          </p>
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-fg-muted">
+            <CalendarDays className="w-3 h-3 shrink-0" />
+            <span className="font-medium">
+              {PERIOD_LABELS_SHORT[status.budget.period]}
+            </span>
+            <span aria-hidden>·</span>
+            <span className="tabular-nums">{periodLabel}</span>
+          </div>
         </div>
         
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <IconButton onClick={() => onEdit(status)} aria-label="Modifica" title="Modifica">
-            ✏️
+        <div className="flex items-center gap-0.5 shrink-0">
+          <IconButton
+            size="sm"
+            onClick={() => onEdit(status)}
+            aria-label="Modifica"
+            title="Modifica"
+          >
+            <Pencil className="w-3.5 h-3.5" />
           </IconButton>
           <IconButton
+            size="sm"
             variant="danger"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
             aria-label="Elimina"
             title="Elimina"
           >
-            🗑️
+            <Trash2 className="w-3.5 h-3.5" />
           </IconButton>
         </div>
       </div>
       
-      {/* Numeri grandi */}
+      {/* Big number row */}
       <div className="flex items-baseline justify-between gap-3">
-        <span className={`text-2xl font-bold tabular-nums ${spentColor}`}>
+        <span
+          className={`
+            font-display text-2xl font-bold tabular-nums tracking-tight
+            ${spentColor}
+          `}
+        >
           {formatCurrency(status.spent)}
         </span>
-        <span className="text-sm text-slate-500 tabular-nums">
-          su {formatCurrency(status.budget.amount_limit)}
+        <span className="text-xs text-fg-muted tabular-nums">
+          su <span className="text-fg-secondary font-medium">{formatCurrency(status.budget.amount_limit)}</span>
         </span>
       </div>
       
-      {/* Barra */}
+      {/* Progress bar */}
       <BudgetProgressBar percentage={status.percentage} />
       
-      {/* Residuo */}
-      <div className="flex items-baseline justify-between pt-1 border-t border-slate-800 text-sm">
-        <span className="text-slate-500">
-          {Number(status.remaining) >= 0 ? "Restano" : "Hai sforato di"}
+      {/* Residuo / sforato */}
+      <div className="flex items-baseline justify-between pt-3 border-t border-border-muted text-sm">
+        <span className="text-fg-secondary">
+          {isOver ? "Hai sforato di" : "Restano"}
         </span>
         <span
-          className={`tabular-nums font-medium ${
-            Number(status.remaining) >= 0 ? "text-emerald-400" : "text-rose-400"
-          }`}
+          className={`
+            tabular-nums font-semibold
+            ${isOver ? "text-danger" : "text-success"}
+          `}
         >
-          {formatCurrency(Math.abs(Number(status.remaining)))}
+          {isOver ? "−" : "+"}{formatCurrency(Math.abs(remaining))}
         </span>
       </div>
     </div>
@@ -127,7 +138,7 @@ export function BudgetCard({ status, onEdit }: BudgetCardProps) {
 }
 
 
-// Helper locale: "2026-05-01" → "1 mag"
+// Helper: "2026-05-01" → "1 mag"
 function formatDateShort(iso: string): string {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;

@@ -10,6 +10,7 @@
  * - Auto-focus al mount
  */
 
+import { Send, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 
@@ -17,6 +18,7 @@ interface ChatInputProps {
   onSend: (content: string) => void;
   disabled?: boolean;
 }
+
 
 export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   const [value, setValue] = useState("");
@@ -45,7 +47,6 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
     onSend(trimmed);
     setValue("");
     
-    // Reset altezza
     const textarea = textareaRef.current;
     if (textarea) textarea.style.height = "auto";
   }
@@ -57,42 +58,108 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
     }
   }
   
+  const canSend = value.trim().length > 0 && !disabled;
+  
   return (
-    <div className="border-t border-slate-700 bg-slate-900/50 backdrop-blur p-3">
-      <div className="flex items-end gap-2 max-w-2xl mx-auto">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Scrivi un messaggio..."
-          disabled={disabled}
-          rows={1}
-          className="
-            flex-1 px-4 py-2.5 rounded-2xl
-            bg-slate-800 text-slate-100 text-sm
-            border border-slate-700
-            focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500
-            disabled:opacity-50 disabled:cursor-not-allowed
-            resize-none
-            placeholder:text-slate-500
-            transition
-          "
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={!value.trim() || disabled}
-          className="
-            px-4 py-2.5 rounded-2xl flex-shrink-0
-            bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium
-            disabled:opacity-30 disabled:cursor-not-allowed
-            transition
-          "
-          aria-label="Invia"
+    <div className="border-t border-border bg-bg-base/80 backdrop-blur-md p-3 sm:p-4">
+      <div className="max-w-2xl mx-auto">
+        <div
+          className={`
+            flex items-end gap-2 p-1.5 pr-2
+            bg-bg-surface border rounded-2xl
+            transition-colors duration-150
+            ${disabled
+              ? "border-border opacity-60"
+              : "border-border focus-within:border-accent focus-within:ring-1 focus-within:ring-accent"}
+          `}
         >
-          Invia
-        </button>
+          {/* Icona AI a sinistra */}
+          <div className="shrink-0 p-2 text-fg-muted pointer-events-none">
+            <Sparkles className="w-4 h-4" aria-hidden />
+          </div>
+          
+          {/* Textarea */}
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Scrivi un messaggio..."
+            disabled={disabled}
+            rows={1}
+            className="
+              flex-1 bg-transparent text-fg-primary text-sm
+              py-2 pr-1
+              focus:outline-none
+              disabled:cursor-not-allowed
+              resize-none
+              placeholder:text-fg-muted
+              leading-6
+            "
+          />
+          
+          {/* Submit button */}
+          <button
+            onClick={handleSubmit}
+            disabled={!canSend}
+            className={`
+              shrink-0 inline-flex items-center justify-center
+              w-9 h-9 rounded-xl
+              transition-all duration-150
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base
+              ${canSend
+                ? "bg-accent hover:bg-accent-hover active:bg-accent-pressed text-accent-fg scale-100"
+                : "bg-bg-elevated text-fg-disabled cursor-not-allowed scale-95"}
+            `}
+            aria-label="Invia"
+          >
+            {disabled ? (
+              <SpinnerIcon />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+        
+        {/* Hint sotto l'input */}
+        <p className="text-[10px] text-fg-muted mt-2 text-center font-medium">
+          <kbd className="px-1.5 py-0.5 rounded bg-bg-surface border border-border text-fg-secondary mr-1">Enter</kbd>
+          per inviare
+          <span className="mx-2">·</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-bg-surface border border-border text-fg-secondary mr-1">Shift+Enter</kbd>
+          per nuova riga
+        </p>
       </div>
     </div>
+  );
+}
+
+
+/**
+ * Spinner inline per stato pending.
+ */
+function SpinnerIcon() {
+  return (
+    <svg
+      className="w-4 h-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+        strokeWidth="3"
+      />
+      <path
+        d="M12 2a10 10 0 0 1 10 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

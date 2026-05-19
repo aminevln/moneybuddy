@@ -40,8 +40,8 @@ backend:  ## Avvia il backend FastAPI in modalità dev
 backend-shell:  ## Apre una shell Python dentro il virtual environment del backend
 	cd backend && uv run python
 
-frontend:  ## Avvia il frontend Next.js in dev mode
-	cd frontend && pnpm dev
+frontend:  ## Avvia il frontend Next.js in dev mode (bind su tutte le interfacce)
+	cd frontend && pnpm dev -H 0.0.0.0
 
 test:  ## Run fast tests (excludes Gemini API tests)
 	cd backend && uv run pytest -v -m "not gemini"

@@ -1,11 +1,12 @@
 "use client";
 
+import { ChevronRight, PiggyBank, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { BudgetForm } from "@/components/budgets/BudgetForm";
 import { BudgetList } from "@/components/budgets/BudgetList";
-import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import type { BudgetStatus } from "@/lib/api/budgets";
 
@@ -30,36 +31,60 @@ export default function BudgetsPage() {
   }
   
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-2xl mx-auto py-8">
-        <nav className="text-sm text-slate-500 mb-4">
-          <Link href="/" className="hover:text-slate-300">Home</Link>
-          <span className="mx-2">/</span>
-          <span>Budget</span>
+    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto py-6 space-y-4">
+        {/* Breadcrumb */}
+        <nav
+          className="flex items-center gap-1.5 text-xs text-fg-muted"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href="/"
+            className="hover:text-fg-primary transition-colors duration-150"
+          >
+            Home
+          </Link>
+          <ChevronRight className="w-3 h-3" aria-hidden />
+          <span className="text-fg-secondary">Budget</span>
         </nav>
         
-        <Card>
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-white">Budget</h1>
-            <button
+        {/* Main card */}
+        <div className="bg-bg-surface border border-border rounded-xl p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <PiggyBank className="w-5 h-5 text-fg-muted shrink-0" />
+              <h1 className="font-display text-xl font-bold text-fg-primary truncate">
+                Budget
+              </h1>
+            </div>
+            <Button
               onClick={openCreate}
-              className="px-3 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition"
+              size="sm"
+              fullWidth={false}
+              iconLeft={<Plus className="w-3.5 h-3.5" />}
             >
-              + Nuovo
-            </button>
+              Nuovo
+            </Button>
           </div>
-          <p className="text-slate-400 text-sm mb-6">
+          <p className="text-fg-secondary text-sm mb-6">
             Imposta limiti di spesa per periodo. Le percentuali si aggiornano da sole.
           </p>
           
           <BudgetList onEdit={openEdit} />
-        </Card>
+        </div>
       </div>
       
       <Modal
         open={modalOpen}
         onClose={close}
         title={editing ? "Modifica budget" : "Nuovo budget"}
+        description={
+          editing
+            ? undefined
+            : "Definisci un limite massimo per una categoria e un periodo."
+        }
+        size="md"
       >
         <BudgetForm
           initial={editing ?? undefined}

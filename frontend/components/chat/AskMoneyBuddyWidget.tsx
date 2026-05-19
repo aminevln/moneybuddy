@@ -8,11 +8,9 @@
  * - Suggerimenti rapidi (chip cliccabili)
  * - Submit → naviga a /chat?q=<domanda>
  *   La pagina chat la riceve via searchParams e la invia automaticamente.
- *
- * Non genera la risposta inline: porta sempre alla chat completa.
- * Vantaggio: storico preservato, UX coerente, codice minimo.
  */
 
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -41,16 +39,32 @@ export function AskMoneyBuddyWidget() {
   }
   
   return (
-    <div className="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 border border-emerald-500/30 rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl" aria-hidden>💬</span>
-        <h2 className="text-sm font-semibold text-emerald-300 uppercase tracking-wider">
+    <div
+      className="
+        relative overflow-hidden
+        bg-gradient-to-br from-accent-soft to-transparent
+        border border-accent/30
+        rounded-xl p-5
+      "
+    >
+      {/* Decoration: alone luminoso in alto a destra */}
+      <div
+        className="absolute -top-12 -right-12 w-32 h-32 bg-accent/10 rounded-full blur-3xl pointer-events-none"
+        aria-hidden
+      />
+      
+      {/* Header */}
+      <div className="relative flex items-center gap-2 mb-4">
+        <div className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-accent text-accent-fg">
+          <Sparkles className="w-4 h-4" />
+        </div>
+        <h2 className="font-display text-sm font-semibold text-fg-primary uppercase tracking-wider">
           Chiedi a MoneyBuddy
         </h2>
       </div>
       
-      {/* Suggerimenti */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      {/* Suggerimenti chip */}
+      <div className="relative flex flex-wrap gap-1.5 mb-4">
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
@@ -58,9 +72,10 @@ export function AskMoneyBuddyWidget() {
             onClick={() => navigateToChat(s)}
             className="
               text-xs px-3 py-1.5 rounded-full
-              bg-slate-800/70 hover:bg-slate-700 text-slate-300
-              border border-slate-700 hover:border-emerald-500/50
-              transition
+              bg-bg-surface hover:bg-bg-elevated
+              text-fg-secondary hover:text-fg-primary
+              border border-border hover:border-accent/40
+              transition-colors duration-150
             "
           >
             {s}
@@ -68,35 +83,42 @@ export function AskMoneyBuddyWidget() {
         ))}
       </div>
       
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="...oppure scrivi qualunque cosa"
-          className="
-            flex-1 px-3 py-2 rounded-lg text-sm
-            bg-slate-900/50 text-slate-100
-            border border-slate-700
-            focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500
-            placeholder:text-slate-500
-            transition
-          "
-        />
+      {/* Input + submit */}
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
+        <div className="relative flex-1">
+          <Sparkles
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted pointer-events-none"
+            aria-hidden
+          />
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="...oppure scrivi qualunque cosa"
+            className="
+              w-full pl-10 pr-3 py-2.5 rounded-lg text-sm
+              bg-bg-surface text-fg-primary
+              border border-border
+              focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
+              placeholder:text-fg-muted
+              transition-colors duration-150
+            "
+          />
+        </div>
         <button
           type="submit"
           disabled={!value.trim()}
           className="
-            px-4 py-2 rounded-lg text-sm font-medium
-            bg-emerald-500 hover:bg-emerald-600 text-white
-            disabled:opacity-30 disabled:cursor-not-allowed
-            transition flex items-center gap-1
+            inline-flex items-center gap-1.5 shrink-0
+            px-4 py-2.5 rounded-lg text-sm font-medium
+            bg-accent hover:bg-accent-hover active:bg-accent-pressed text-accent-fg
+            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-accent
+            transition-colors duration-150
           "
           aria-label="Chiedi"
         >
           <span>Chiedi</span>
-          <span aria-hidden>→</span>
+          <ArrowRight className="w-4 h-4" />
         </button>
       </form>
     </div>

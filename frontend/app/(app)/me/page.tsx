@@ -2,45 +2,93 @@
 
 /**
  * Pagina /me: profilo dell'utente loggato.
- *
- * Demo della "protected route". Mostra tutti i dati che il backend
- * conosce dell'utente.
  */
 
+import {
+  ArrowLeft,
+  Calendar,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Globe,
+  Hash,
+  LogOut,
+  Mail,
+  User as UserIcon,
+} from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
-import { useAuth } from "@/lib/auth/context/useAuth";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+import { useAuth } from "@/lib/auth/context/useAuth";
 
 
 export default function MePage() {
   const { user, logout } = useAuth();
   
-  // RequireAuth ci garantisce che user != null qui dentro
   if (!user) return null;
   
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="w-full max-w-md">
-        <Card>
-          <h1 className="text-2xl font-bold text-white mb-1">
-            Il tuo profilo
-          </h1>
-          <p className="text-slate-400 text-sm mb-6">
-            I dati che MoneyBuddy conosce di te.
-          </p>
+    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto py-6 space-y-4">
+        {/* Breadcrumb */}
+        <nav
+          className="flex items-center gap-1.5 text-xs text-fg-muted"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href="/"
+            className="hover:text-fg-primary transition-colors duration-150"
+          >
+            Home
+          </Link>
+          <ChevronRight className="w-3 h-3" aria-hidden />
+          <span className="text-fg-secondary">Profilo</span>
+        </nav>
+        
+        {/* Main card */}
+        <div className="bg-bg-surface border border-border rounded-xl p-5 sm:p-6">
+          {/* Header with avatar */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="shrink-0 inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent-soft">
+              <UserIcon className="w-6 h-6 text-accent" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-xl font-bold text-fg-primary truncate">
+                {user.display_name}
+              </h1>
+              <p className="text-sm text-fg-secondary truncate">{user.email}</p>
+            </div>
+          </div>
           
-          <dl className="space-y-3 text-sm">
-            <Field label="Nome" value={user.display_name} />
-            <Field label="Email" value={user.email} />
-            <Field label="Valuta" value={user.currency} />
-            <Field label="Fuso orario" value={user.timezone} />
+          {/* Fields */}
+          <dl className="space-y-2">
             <Field
-              label="Giorno stipendio"
-              value={user.salary_day ? `${user.salary_day} del mese` : "Non impostato"}
+              icon={<Mail className="w-4 h-4" />}
+              label="Email"
+              value={user.email}
             />
             <Field
+              icon={<CreditCard className="w-4 h-4" />}
+              label="Valuta"
+              value={user.currency}
+            />
+            <Field
+              icon={<Globe className="w-4 h-4" />}
+              label="Fuso orario"
+              value={user.timezone}
+            />
+            <Field
+              icon={<Clock className="w-4 h-4" />}
+              label="Giorno stipendio"
+              value={
+                user.salary_day
+                  ? `${user.salary_day} del mese`
+                  : "Non impostato"
+              }
+            />
+            <Field
+              icon={<Calendar className="w-4 h-4" />}
               label="Registrato il"
               value={new Date(user.created_at).toLocaleDateString("it-IT", {
                 day: "numeric",
@@ -48,21 +96,38 @@ export default function MePage() {
                 year: "numeric",
               })}
             />
-            <Field label="User ID" value={user.id} mono />
+            <Field
+              icon={<Hash className="w-4 h-4" />}
+              label="User ID"
+              value={user.id}
+              mono
+            />
           </dl>
           
-          <div className="mt-6 space-y-2">
+          {/* Actions */}
+          <div className="mt-6 pt-5 border-t border-border-muted space-y-2">
             <Link href="/" className="block">
-              <Button variant="secondary">Torna alla home</Button>
+              <Button
+                variant="secondary"
+                iconLeft={<ArrowLeft className="w-4 h-4" />}
+              >
+                Torna alla home
+              </Button>
             </Link>
             <button
               onClick={logout}
-              className="w-full text-sm text-slate-400 hover:text-slate-200 underline py-2"
+              className="
+                w-full inline-flex items-center justify-center gap-2
+                px-4 py-2 rounded-lg
+                text-sm text-fg-muted hover:text-danger
+                transition-colors duration-150
+              "
             >
-              Esci dall&apos;account
+              <LogOut className="w-4 h-4" />
+              <span>Esci dall&apos;account</span>
             </button>
           </div>
-        </Card>
+        </div>
       </div>
     </main>
   );
@@ -73,13 +138,40 @@ export default function MePage() {
 // SUB-COMPONENTS
 // ============================================================
 
-function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function Field({
+  icon,
+  label,
+  value,
+  mono = false,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-0.5 p-3 bg-slate-900/50 rounded-lg">
-      <dt className="text-xs text-slate-500 uppercase tracking-wider">{label}</dt>
-      <dd className={`text-slate-200 ${mono ? "font-mono text-xs break-all" : ""}`}>
-        {value}
-      </dd>
+    <div
+      className="
+        flex items-center gap-3 p-3 rounded-lg
+        bg-bg-elevated border border-border-muted
+        transition-colors duration-150
+        hover:border-border
+      "
+    >
+      <div className="shrink-0 text-fg-muted">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <dt className="text-xs text-fg-muted uppercase tracking-wider font-medium">
+          {label}
+        </dt>
+        <dd
+          className={`
+            text-sm text-fg-primary mt-0.5
+            ${mono ? "font-mono text-xs break-all text-fg-secondary" : ""}
+          `}
+        >
+          {value}
+        </dd>
+      </div>
     </div>
   );
 }

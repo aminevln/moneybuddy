@@ -2,30 +2,35 @@
 
 /**
  * Form per creare/modificare una categoria.
- *
- * Modalità "create" (initial=undefined) o "edit" (initial=Category).
- * Chiama onSuccess dopo creazione/modifica riuscita.
  */
 
+import { Check, Tag } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/FormError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getErrorMessage } from "@/lib/api/errors";
 import {
+  type Category,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
-  type Category,
 } from "@/lib/api/categories";
+import { getErrorMessage } from "@/lib/api/errors";
 
 
-// Palette di colori predefinita
+// Palette di colori predefinita — coordinata con i token viz del design system
 const PRESET_COLORS = [
-  "#ef4444", "#f97316", "#f59e0b", "#10b981",
-  "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899",
-  "#64748b",
+  "#FF6B35",  // accent (arancione brand)
+  "#EF4444",  // danger (rosso)
+  "#F59E0B",  // warning (ambra)
+  "#10B981",  // success (verde)
+  "#06B6D4",  // cyan
+  "#3B82F6",  // info (blu)
+  "#8B5CF6",  // viola
+  "#EC4899",  // rosa
+  "#84CC16",  // lime
+  "#6e6e7a",  // grigio neutro
 ];
 
 
@@ -35,7 +40,12 @@ interface CategoryFormProps {
   onCancel: () => void;
 }
 
-export function CategoryForm({ initial, onSuccess, onCancel }: CategoryFormProps) {
+
+export function CategoryForm({
+  initial,
+  onSuccess,
+  onCancel,
+}: CategoryFormProps) {
   const isEdit = !!initial;
   
   const [name, setName] = useState(initial?.name ?? "");
@@ -44,7 +54,6 @@ export function CategoryForm({ initial, onSuccess, onCancel }: CategoryFormProps
   
   const createMutation = useCreateCategoryMutation();
   const updateMutation = useUpdateCategoryMutation();
-  
   const isPending = createMutation.isPending || updateMutation.isPending;
   
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -73,12 +82,16 @@ export function CategoryForm({ initial, onSuccess, onCancel }: CategoryFormProps
     <form onSubmit={handleSubmit} className="space-y-4">
       <FormError message={error} />
       
+      {/* Nome */}
       <div>
-        <Label htmlFor="cat-name">Nome categoria</Label>
+        <Label htmlFor="cat-name" required>
+          Nome categoria
+        </Label>
         <Input
           id="cat-name"
           type="text"
           placeholder="Es. Caffè del mattino"
+          iconLeft={<Tag className="w-4 h-4" />}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -89,25 +102,64 @@ export function CategoryForm({ initial, onSuccess, onCancel }: CategoryFormProps
         />
       </div>
       
+      {/* Color picker */}
       <div>
         <Label>Colore</Label>
         <div className="flex flex-wrap gap-2">
-          {PRESET_COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className={`w-8 h-8 rounded-full transition ${color === c ? "ring-2 ring-white ring-offset-2 ring-offset-slate-800" : "opacity-60 hover:opacity-100"}`}
-              style={{ backgroundColor: c }}
-              aria-label={`Colore ${c}`}
-              disabled={isPending}
-            />
-          ))}
+          {PRESET_COLORS.map((c) => {
+            const isSelected = color === c;
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                disabled={isPending}
+                aria-label={`Colore ${c}`}
+                className={`
+                  relative w-9 h-9 rounded-full
+                  transition-transform duration-150
+                  disabled:cursor-not-allowed
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface
+                  ${isSelected
+                    ? "scale-110 ring-2 ring-fg-primary ring-offset-2 ring-offset-bg-surface"
+                    : "opacity-70 hover:opacity-100 hover:scale-105"}
+                `}
+                style={{ backgroundColor: c }}
+              >
+                {isSelected && (
+                  <Check
+                    className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow"
+                    strokeWidth={3}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
       
+      {/* Preview */}
+      <div className="flex items-center gap-2 p-3 bg-bg-elevated border border-border rounded-lg">
+        <span className="text-xs text-fg-muted uppercase tracking-wider font-medium mr-1">
+          Anteprima
+        </span>
+        <span
+          className="inline-block w-3 h-3 rounded-full shrink-0"
+          style={{ backgroundColor: color }}
+        />
+        <span className="text-sm text-fg-primary font-medium truncate">
+          {name.trim() || "Nome categoria"}
+        </span>
+      </div>
+      
+      {/* Actions */}
       <div className="flex gap-2 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Annulla
         </Button>
         <Button type="submit" loading={isPending}>

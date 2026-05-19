@@ -1,19 +1,20 @@
 "use client";
 
+import { Landmark, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/FormError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getErrorMessage } from "@/lib/api/errors";
 import {
+  type Debt,
   decimalToPercent,
   percentToDecimal,
   useCreateDebtMutation,
   useUpdateDebtMutation,
-  type Debt,
 } from "@/lib/api/debts";
+import { getErrorMessage } from "@/lib/api/errors";
 
 
 interface DebtFormProps {
@@ -21,6 +22,7 @@ interface DebtFormProps {
   onSuccess: () => void;
   onCancel: () => void;
 }
+
 
 export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
   const isEdit = !!initial;
@@ -35,7 +37,6 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
   const [monthlyPayment, setMonthlyPayment] = useState<string>(
     initial?.monthly_payment ?? ""
   );
-  // Visualizziamo il rate come percentuale per l'utente (es. 2.5 invece di 0.025)
   const [interestRate, setInterestRate] = useState<string>(
     initial?.interest_rate !== null && initial?.interest_rate !== undefined
       ? decimalToPercent(initial.interest_rate)
@@ -53,7 +54,6 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
     e.preventDefault();
     setError(null);
     
-    // Convertiamo il rate da percentuale (utente) a decimale (backend)
     const rateDecimal = interestRate.trim()
       ? percentToDecimal(interestRate)
       : undefined;
@@ -65,7 +65,9 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
           payload: {
             creditor: creditor.trim(),
             remaining_amount: Number(remainingAmount),
-            monthly_payment: monthlyPayment.trim() ? Number(monthlyPayment) : undefined,
+            monthly_payment: monthlyPayment.trim()
+              ? Number(monthlyPayment)
+              : undefined,
             interest_rate: rateDecimal,
             due_date: dueDate || undefined,
             notes: notes.trim() || undefined,
@@ -76,7 +78,9 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
           creditor: creditor.trim(),
           original_amount: Number(originalAmount),
           remaining_amount: Number(remainingAmount),
-          monthly_payment: monthlyPayment.trim() ? Number(monthlyPayment) : undefined,
+          monthly_payment: monthlyPayment.trim()
+            ? Number(monthlyPayment)
+            : undefined,
           interest_rate: rateDecimal,
           due_date: dueDate || undefined,
           notes: notes.trim() || undefined,
@@ -92,12 +96,16 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <FormError message={error} />
       
+      {/* Creditore */}
       <div>
-        <Label htmlFor="debt-creditor">Creditore</Label>
+        <Label htmlFor="debt-creditor" required>
+          Creditore
+        </Label>
         <Input
           id="debt-creditor"
           type="text"
           placeholder="Es. Intesa Sanpaolo, Findomestic, Papà"
+          iconLeft={<Landmark className="w-4 h-4" />}
           value={creditor}
           onChange={(e) => setCreditor(e.target.value)}
           required
@@ -108,35 +116,43 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
         />
       </div>
       
+      {/* Importi */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="debt-original">Importo iniziale (€)</Label>
+          <Label htmlFor="debt-original" required={!isEdit}>
+            Importo iniziale
+          </Label>
           <Input
             id="debt-original"
             type="number"
             min="0.01"
             step="0.01"
             placeholder="100000"
+            suffix="€"
             value={originalAmount}
             onChange={(e) => setOriginalAmount(e.target.value)}
             required
             disabled={isPending || isEdit}
           />
           {isEdit && (
-            <p className="text-xs text-slate-500 mt-1">
-              Non modificabile
+            <p className="flex items-start gap-1.5 text-xs text-fg-muted mt-1.5">
+              <Lock className="w-3 h-3 shrink-0 mt-0.5" />
+              <span>Non modificabile</span>
             </p>
           )}
         </div>
         
         <div>
-          <Label htmlFor="debt-remaining">Residuo (€)</Label>
+          <Label htmlFor="debt-remaining" required>
+            Residuo
+          </Label>
           <Input
             id="debt-remaining"
             type="number"
             min="0"
             step="0.01"
             placeholder="80000"
+            suffix="€"
             value={remainingAmount}
             onChange={(e) => setRemainingAmount(e.target.value)}
             required
@@ -145,15 +161,17 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
         </div>
       </div>
       
+      {/* Rata + Tasso */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="debt-payment">Rata mensile (€)</Label>
+          <Label htmlFor="debt-payment">Rata mensile</Label>
           <Input
             id="debt-payment"
             type="number"
             min="0"
             step="0.01"
-            placeholder="Opzionale"
+            placeholder="500"
+            suffix="€"
             value={monthlyPayment}
             onChange={(e) => setMonthlyPayment(e.target.value)}
             disabled={isPending}
@@ -161,14 +179,15 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
         </div>
         
         <div>
-          <Label htmlFor="debt-rate">Tasso (%)</Label>
+          <Label htmlFor="debt-rate">Tasso</Label>
           <Input
             id="debt-rate"
             type="number"
             min="0"
             max="999"
             step="0.01"
-            placeholder="Opzionale"
+            placeholder="2.5"
+            suffix="%"
             value={interestRate}
             onChange={(e) => setInterestRate(e.target.value)}
             disabled={isPending}
@@ -176,6 +195,7 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
         </div>
       </div>
       
+      {/* Scadenza */}
       <div>
         <Label htmlFor="debt-due">Scadenza</Label>
         <Input
@@ -187,6 +207,7 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
         />
       </div>
       
+      {/* Note */}
       <div>
         <Label htmlFor="debt-notes">Note</Label>
         <textarea
@@ -198,18 +219,26 @@ export function DebtForm({ initial, onSuccess, onCancel }: DebtFormProps) {
           rows={3}
           disabled={isPending}
           className="
-            w-full px-4 py-2.5 rounded-lg
-            bg-slate-900/50 text-slate-100 text-sm
-            border border-slate-700
-            focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500
-            disabled:opacity-50
-            transition resize-y
+            w-full px-4 py-2.5 rounded-lg text-sm
+            bg-bg-surface text-fg-primary
+            border border-border
+            placeholder:text-fg-muted
+            focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-colors duration-150
+            resize-y
           "
         />
       </div>
       
+      {/* Actions */}
       <div className="flex gap-2 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Annulla
         </Button>
         <Button type="submit" loading={isPending}>

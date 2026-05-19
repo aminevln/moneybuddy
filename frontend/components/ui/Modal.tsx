@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Modal minimale con backdrop e chiusura su ESC + click esterno.
+ * Modal con backdrop, chiusura su ESC + click esterno, animazioni.
  *
  * Uso:
  *   <Modal open={isOpen} onClose={() => setIsOpen(false)} title="Crea categoria">
@@ -9,6 +9,7 @@
  *   </Modal>
  */
 
+import { X } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 
 
@@ -16,10 +17,25 @@ interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
+  
+  /** Dimensione massima del modal */
+  size?: "sm" | "md" | "lg";
+  
+  /** Sottotitolo opzionale sotto al titolo */
+  description?: string;
+  
   children: ReactNode;
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  description,
+  size = "md",
+  children,
+}: ModalProps) {
   // Chiudi con ESC
   useEffect(() => {
     if (!open) return;
@@ -43,26 +59,60 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   
   if (!open) return null;
   
+  const sizeClasses = {
+    sm: "max-w-sm",
+    md: "max-w-md",
+    lg: "max-w-lg",
+  }[size];
+  
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay backdrop-blur-sm p-4 animate-fade-in"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <div
-        className="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+        className={`
+          bg-bg-surface border border-border rounded-xl
+          w-full ${sizeClasses}
+          shadow-2xl animate-slide-up
+        `}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">{title}</h2>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 p-5 border-b border-border">
+          <div className="min-w-0 flex-1">
+            <h2
+              id="modal-title"
+              className="font-display text-lg font-semibold text-fg-primary"
+            >
+              {title}
+            </h2>
+            {description && (
+              <p className="text-fg-secondary text-sm mt-1">{description}</p>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 text-2xl leading-none"
+            className="
+              shrink-0 inline-flex items-center justify-center
+              w-8 h-8 rounded-md
+              text-fg-muted hover:text-fg-primary hover:bg-bg-elevated
+              transition-colors duration-150
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent
+            "
             aria-label="Chiudi"
           >
-            ×
+            <X className="w-5 h-5" />
           </button>
         </div>
-        {children}
+        
+        {/* Body */}
+        <div className="p-5">
+          {children}
+        </div>
       </div>
     </div>
   );

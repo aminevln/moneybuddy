@@ -5,19 +5,26 @@
  *
  * Mostra:
  * - Pallino colorato + nome
- * - Badge "Sistema" se is_system
+ * - Badge "Sistema" se is_system (read-only)
  * - Bottoni Edit/Delete (solo se user-owned)
  */
 
+import { Pencil, Trash2 } from "lucide-react";
+
+import { Badge } from "@/components/ui/Badge";
 import { ColorDot } from "@/components/ui/ColorDot";
 import { IconButton } from "@/components/ui/IconButton";
-import { useDeleteCategoryMutation, type Category } from "@/lib/api/categories";
+import {
+  type Category,
+  useDeleteCategoryMutation,
+} from "@/lib/api/categories";
 
 
 interface CategoryRowProps {
   category: Category;
   onEdit: (category: Category) => void;
 }
+
 
 export function CategoryRow({ category, onEdit }: CategoryRowProps) {
   const deleteMutation = useDeleteCategoryMutation();
@@ -27,42 +34,53 @@ export function CategoryRow({ category, onEdit }: CategoryRowProps) {
     try {
       await deleteMutation.mutateAsync(category.id);
     } catch (err) {
-      // L'errore viene già mostrato dal toast/banner globale che faremo dopo.
-      // Per ora, alert minimale.
       alert("Errore durante l'eliminazione");
       console.error(err);
     }
   }
   
   return (
-    <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg hover:bg-slate-900/70 transition">
-      <div className="flex items-center gap-3">
-        <ColorDot color={category.color} />
-        <span className="text-slate-200">{category.name}</span>
+    <div
+      className="
+        flex items-center justify-between gap-3 p-3 rounded-lg
+        bg-bg-surface border border-border
+        transition-all duration-150
+        hover:bg-bg-elevated hover:border-border-strong
+      "
+    >
+      {/* Sinistra: dot + nome + badge */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <ColorDot color={category.color} size="md" />
+        <span className="text-sm text-fg-primary font-medium truncate">
+          {category.name}
+        </span>
         {category.is_system && (
-          <span className="text-xs px-2 py-0.5 bg-slate-700 text-slate-400 rounded">
+          <Badge size="sm" variant="default">
             sistema
-          </span>
+          </Badge>
         )}
       </div>
       
+      {/* Destra: azioni (solo per user categories) */}
       {!category.is_system && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 shrink-0">
           <IconButton
+            size="sm"
             onClick={() => onEdit(category)}
             aria-label="Modifica"
             title="Modifica"
           >
-            ✏️
+            <Pencil className="w-3.5 h-3.5" />
           </IconButton>
           <IconButton
+            size="sm"
             variant="danger"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
             aria-label="Elimina"
             title="Elimina"
           >
-            🗑️
+            <Trash2 className="w-3.5 h-3.5" />
           </IconButton>
         </div>
       )}

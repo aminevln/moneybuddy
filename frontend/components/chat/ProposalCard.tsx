@@ -4,25 +4,30 @@
  * Bolla speciale per le proposte di transazione.
  *
  * Stati:
- * - pending: bottoni Conferma/Annulla attivi
- * - confirmed: badge "Confermato" verde, bottoni nascosti
- * - rejected: badge "Annullato" grigio, bottoni nascosti
+ * - pending: bottoni Conferma/Rifiuta attivi
+ * - confirmed: badge "Confermata" success, bottoni nascosti
+ * - rejected: badge "Rifiutata" muted, opacity ridotta
  */
 
-import { useAccountsQuery, ACCOUNT_TYPE_EMOJI } from "@/lib/api/accounts";
+import { Check, Lightbulb, X, XCircle } from "lucide-react";
+
+import { ACCOUNT_TYPE_EMOJI, useAccountsQuery } from "@/lib/api/accounts";
 import { useCategoriesQuery } from "@/lib/api/categories";
 import {
-  useConfirmProposalMutation,
-  useRejectProposalMutation,
   type ChatMessage,
   type TransactionProposal,
+  useConfirmProposalMutation,
+  useRejectProposalMutation,
 } from "@/lib/api/chat";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { formatCurrency } from "@/lib/format/currency";
 
 
 interface ProposalCardProps {
   message: ChatMessage;
 }
+
 
 export function ProposalCard({ message }: ProposalCardProps) {
   const proposal = message.tool_calls as unknown as TransactionProposal;
@@ -42,10 +47,10 @@ export function ProposalCard({ message }: ProposalCardProps) {
   const isRejected = status === "rejected";
   const isLoading = confirmMutation.isPending || rejectMutation.isPending;
   
-  const sign = args.direction === "income" ? "+" : "−";
-  const directionLabel = args.direction === "income" ? "Entrata" : "Uscita";
-  const amountColor =
-    args.direction === "income" ? "text-emerald-400" : "text-rose-400";
+  const isIncome = args.direction === "income";
+  const sign = isIncome ? "+" : "−";
+  const directionLabel = isIncome ? "Entrata" : "Uscita";
+  const amountColor = isIncome ? "text-success" : "text-danger";
   
   function handleConfirm() {
     confirmMutation.mutate(message.id);
@@ -56,50 +61,82 @@ export function ProposalCard({ message }: ProposalCardProps) {
   }
   
   return (
-    <div className="flex justify-start">
+    <div className="flex justify-start animate-fade-in">
       <div
         className={`
-          max-w-[90%] rounded-2xl rounded-bl-sm overflow-hidden
-          border-2
-          ${isPending ? "border-emerald-500/50 bg-slate-800" : ""}
-          ${isConfirmed ? "border-emerald-500/30 bg-slate-800/50" : ""}
-          ${isRejected ? "border-slate-700 bg-slate-800/30 opacity-60" : ""}
+          max-w-[90%] sm:max-w-[420px] overflow-hidden
+          bg-bg-surface border rounded-2xl rounded-bl-md
+          transition-opacity duration-200
+          ${isPending ? "border-accent/40" : ""}
+          ${isConfirmed ? "border-success/30" : ""}
+          ${isRejected ? "border-border opacity-60" : ""}
         `}
       >
         {/* Header */}
-        <div className="px-4 py-2 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-emerald-300">
-            <span aria-hidden>💡</span>
-            <span className="uppercase tracking-wider font-semibold">
+        <div
+          className={`
+            px-4 py-2.5 border-b
+            flex items-center justify-between gap-2
+            ${isPending ? "bg-accent-soft border-accent/20" : ""}
+            ${isConfirmed ? "bg-success-soft border-success/20" : ""}
+            ${isRejected ? "bg-bg-elevated border-border" : ""}
+          `}
+        >
+          <div className="flex items-center gap-2">
+            <div
+              className={`
+                inline-flex items-center justify-center w-6 h-6 rounded-md
+                ${isPending ? "bg-accent text-accent-fg" : ""}
+                ${isConfirmed ? "bg-success text-success-fg" : ""}
+                ${isRejected ? "bg-bg-surface text-fg-muted" : ""}
+              `}
+            >
+              <Lightbulb className="w-3.5 h-3.5" />
+            </div>
+            <span
+              className={`
+                text-xs font-semibold uppercase tracking-wider
+                ${isPending ? "text-accent" : ""}
+                ${isConfirmed ? "text-success" : ""}
+                ${isRejected ? "text-fg-muted" : ""}
+              `}
+            >
               Proposta
             </span>
           </div>
+          
+          {/* Status badge */}
           {isConfirmed && (
-            <div className="flex items-center gap-1 text-xs text-emerald-400">
-              <span aria-hidden>✓</span>
-              <span>Confermata</span>
-            </div>
+            <Badge variant="success" size="sm" icon={<Check className="w-3 h-3" />}>
+              Confermata
+            </Badge>
           )}
           {isRejected && (
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <span aria-hidden>✕</span>
-              <span>Annullata</span>
-            </div>
+            <Badge variant="default" size="sm" icon={<XCircle className="w-3 h-3" />}>
+              Rifiutata
+            </Badge>
           )}
         </div>
         
         {/* Body */}
         <div className="p-4 space-y-3">
+          {/* Importo (eyecatcher) */}
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
+            <div className="text-[10px] text-fg-muted uppercase tracking-wider font-medium mb-1">
               {directionLabel}
             </div>
-            <div className={`text-3xl font-bold tabular-nums ${amountColor}`}>
+            <div
+              className={`
+                font-display text-3xl font-bold tabular-nums tracking-tight
+                ${amountColor}
+              `}
+            >
               {sign}{formatCurrency(args.amount)}
             </div>
           </div>
           
-          <div className="space-y-1.5 text-sm">
+          {/* Details */}
+          <div className="space-y-2 pt-1">
             <Field label="Descrizione" value={args.description} />
             
             {args.merchant && (
@@ -128,31 +165,27 @@ export function ProposalCard({ message }: ProposalCardProps) {
         
         {/* Action buttons (solo se pending) */}
         {isPending && (
-          <div className="border-t border-slate-700 p-3 flex gap-2">
-            <button
+          <div className="border-t border-border p-3 flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleReject}
               disabled={isLoading}
-              className="
-                flex-1 px-3 py-2 rounded-lg text-sm font-medium
-                bg-slate-700 hover:bg-slate-600 text-slate-200
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition
-              "
+              loading={rejectMutation.isPending}
+              iconLeft={<X className="w-3.5 h-3.5" />}
             >
-              Annulla
-            </button>
-            <button
+              Rifiuta
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleConfirm}
               disabled={isLoading}
-              className="
-                flex-1 px-3 py-2 rounded-lg text-sm font-medium
-                bg-emerald-500 hover:bg-emerald-600 text-white
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition
-              "
+              loading={confirmMutation.isPending}
+              iconLeft={<Check className="w-3.5 h-3.5" />}
             >
               Conferma
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -167,9 +200,13 @@ export function ProposalCard({ message }: ProposalCardProps) {
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-xs text-slate-500 flex-shrink-0">{label}</span>
-      <span className="text-slate-200 text-right truncate">{value}</span>
+    <div className="flex items-baseline justify-between gap-3 text-sm">
+      <span className="text-xs text-fg-muted shrink-0 uppercase tracking-wider font-medium">
+        {label}
+      </span>
+      <span className="text-fg-primary text-right truncate font-medium">
+        {value}
+      </span>
     </div>
   );
 }

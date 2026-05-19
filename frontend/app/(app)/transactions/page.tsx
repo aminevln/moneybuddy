@@ -11,20 +11,21 @@
  * - Bottone di void
  */
 
+import { ChevronRight, Plus, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { Card } from "@/components/ui/Card";
-import { Modal } from "@/components/ui/Modal";
+import { BalanceSummary } from "@/components/accounts/BalanceSummary";
 import { TransactionFilters } from "@/components/transactions/TransactionFilters";
 import { TransactionForm } from "@/components/transactions/TransactionForm";
 import { TransactionList } from "@/components/transactions/TransactionList";
 import { TransactionPagination } from "@/components/transactions/TransactionPagination";
-import { BalanceSummary } from "@/components/accounts/BalanceSummary";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import {
-  useTransactionsQuery,
   type Transaction,
   type TransactionListFilters,
+  useTransactionsQuery,
 } from "@/lib/api/transactions";
 
 
@@ -37,7 +38,6 @@ export default function TransactionsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
   
-  // Carichiamo la stessa query qui per avere accesso a total/pagination
   const { data } = useTransactionsQuery(filters);
   
   function openCreate() {
@@ -60,34 +60,58 @@ export default function TransactionsPage() {
   }
   
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-2xl mx-auto py-8">
-        <nav className="text-sm text-slate-500 mb-4">
-          <Link href="/" className="hover:text-slate-300">Home</Link>
-          <span className="mx-2">/</span>
-          <span>Transazioni</span>
+    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto py-6 space-y-4">
+        {/* Breadcrumb */}
+        <nav
+          className="flex items-center gap-1.5 text-xs text-fg-muted"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href="/"
+            className="hover:text-fg-primary transition-colors duration-150"
+          >
+            Home
+          </Link>
+          <ChevronRight className="w-3 h-3" aria-hidden />
+          <span className="text-fg-secondary">Transazioni</span>
         </nav>
         
-        {/* Widget Disponibile in cima per contesto */}
-        <div className="mb-4">
-          <BalanceSummary />
-        </div>
+        {/* Balance summary */}
+        <BalanceSummary />
         
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-white">Transazioni</h1>
-            <button
+        {/* Main card */}
+        <div className="bg-bg-surface border border-border rounded-xl p-5">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5 gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Receipt className="w-5 h-5 text-fg-muted shrink-0" />
+              <h1 className="font-display text-xl font-bold text-fg-primary truncate">
+                Transazioni
+              </h1>
+              {data && (
+                <span className="text-xs text-fg-muted ml-1 tabular-nums shrink-0">
+                  · {data.total}
+                </span>
+              )}
+            </div>
+            <Button
               onClick={openCreate}
-              className="px-3 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition"
+              size="sm"
+              fullWidth={false}
+              iconLeft={<Plus className="w-3.5 h-3.5" />}
             >
-              + Nuova
-            </button>
+              Nuova
+            </Button>
           </div>
           
+          {/* Filters */}
           <TransactionFilters filters={filters} onChange={setFilters} />
           
+          {/* List */}
           <TransactionList filters={filters} onEdit={openEdit} />
           
+          {/* Pagination */}
           {data && (
             <TransactionPagination
               page={data.page}
@@ -97,13 +121,19 @@ export default function TransactionsPage() {
               onPageChange={setPage}
             />
           )}
-        </Card>
+        </div>
       </div>
       
       <Modal
         open={modalOpen}
         onClose={close}
         title={editing ? "Modifica transazione" : "Nuova transazione"}
+        description={
+          editing
+            ? "Puoi modificare descrizione, categoria, esercente e data"
+            : undefined
+        }
+        size="md"
       >
         <TransactionForm
           initial={editing ?? undefined}

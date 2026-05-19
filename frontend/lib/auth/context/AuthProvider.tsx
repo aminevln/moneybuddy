@@ -87,8 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    bootstrap();
-    
+    // .catch() garantisce che status non rimanga mai "loading" per sempre
+    // se bootstrap() lancia un'eccezione inattesa fuori dal try/catch interno.
+    bootstrap().catch(() => {
+      if (!cancelled) {
+        clearAuth();
+        setUser(null);
+        setStatus("unauthenticated");
+      }
+    });
+
     return () => {
       cancelled = true;
     };

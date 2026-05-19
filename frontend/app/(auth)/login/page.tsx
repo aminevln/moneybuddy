@@ -21,8 +21,9 @@ export default function LoginPage() {
 
 function LoginLoading() {
   return (
-    <div className="text-center text-slate-400 text-sm py-8">
-      Caricamento...
+    <div className="bg-bg-surface border border-border rounded-2xl p-8 text-center">
+      <div className="inline-block w-6 h-6 border-2 border-border-strong border-t-accent rounded-full animate-spin mb-3" />
+      <p className="text-fg-secondary text-sm">Caricamento...</p>
     </div>
   );
 }

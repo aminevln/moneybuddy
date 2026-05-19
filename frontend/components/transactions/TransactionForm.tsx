@@ -6,13 +6,13 @@
  * Modalità create:
  * - Tutti i campi modificabili
  * - Direction = expense di default
- * - Occurred_at = adesso
  *
  * Modalità edit:
- * - Direction, account, amount sono READONLY (regola append-only ledger)
+ * - Direction, account, amount sono READONLY
  * - Solo description, merchant, category, datetime sono modificabili
  */
 
+import { ArrowDownRight, ArrowUpRight, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -20,14 +20,14 @@ import { FormError } from "@/components/ui/FormError";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
-import { getErrorMessage } from "@/lib/api/errors";
-import { useAccountsQuery, ACCOUNT_TYPE_EMOJI } from "@/lib/api/accounts";
+import { ACCOUNT_TYPE_EMOJI, useAccountsQuery } from "@/lib/api/accounts";
 import { useCategoriesQuery } from "@/lib/api/categories";
+import { getErrorMessage } from "@/lib/api/errors";
 import {
-  useCreateTransactionMutation,
-  useUpdateTransactionMutation,
   type Transaction,
   type TxnDirection,
+  useCreateTransactionMutation,
+  useUpdateTransactionMutation,
 } from "@/lib/api/transactions";
 import {
   fromDatetimeLocalInput,
@@ -37,11 +37,11 @@ import {
 
 interface TransactionFormProps {
   initial?: Transaction;
-  /** Account preselezionato (es. quando crei da una specifica vista account) */
   defaultAccountId?: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
+
 
 export function TransactionForm({
   initial,
@@ -54,7 +54,6 @@ export function TransactionForm({
   const { data: accounts } = useAccountsQuery();
   const { data: categories } = useCategoriesQuery();
   
-  // Stati iniziali
   const [direction, setDirection] = useState<TxnDirection>(
     initial?.direction ?? "expense"
   );
@@ -64,15 +63,9 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState<string>(
     initial?.category_id ?? ""
   );
-  const [amount, setAmount] = useState<string>(
-    initial?.amount ?? ""
-  );
-  const [description, setDescription] = useState(
-    initial?.description ?? ""
-  );
-  const [merchant, setMerchant] = useState(
-    initial?.merchant ?? ""
-  );
+  const [amount, setAmount] = useState<string>(initial?.amount ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [merchant, setMerchant] = useState(initial?.merchant ?? "");
   const [occurredAt, setOccurredAt] = useState(
     initial
       ? toDatetimeLocalInput(new Date(initial.occurred_at))
@@ -85,8 +78,7 @@ export function TransactionForm({
   const updateMutation = useUpdateTransactionMutation();
   const isPending = createMutation.isPending || updateMutation.isPending;
   
-  // Quando l'utente cambia accounts, se non c'è un accountId selezionato e
-  // ci sono accounts, preselezioniamo il primo (UX più snella)
+  // Preselect first account
   if (!accountId && accounts && accounts.length > 0) {
     setAccountId(accounts[0].id);
   }
@@ -123,14 +115,14 @@ export function TransactionForm({
     }
   }
   
-  // Mostra errore se l'utente non ha account configurati
+  // No accounts → CTA
   if (!isEdit && accounts && accounts.length === 0) {
     return (
-      <div className="text-center py-4">
-        <p className="text-slate-300 mb-3">
+      <div className="text-center py-4 space-y-3">
+        <p className="text-fg-secondary text-sm">
           Per registrare transazioni devi prima creare almeno un account.
         </p>
-        <Button type="button" variant="secondary" onClick={onCancel}>
+        <Button type="button" variant="secondary" onClick={onCancel} fullWidth={false}>
           Chiudi
         </Button>
       </div>
@@ -151,45 +143,53 @@ export function TransactionForm({
               onClick={() => setDirection("expense")}
               disabled={isPending}
               label="Uscita"
-              emoji="⬇️"
-              activeClass="bg-rose-500/20 border-rose-500 text-rose-300"
+              icon={<ArrowDownRight className="w-4 h-4" />}
+              activeColor="danger"
             />
             <DirectionButton
               active={direction === "income"}
               onClick={() => setDirection("income")}
               disabled={isPending}
               label="Entrata"
-              emoji="⬆️"
-              activeClass="bg-emerald-500/20 border-emerald-500 text-emerald-300"
+              icon={<ArrowUpRight className="w-4 h-4" />}
+              activeColor="success"
             />
           </div>
         </div>
       )}
       
-      {/* Amount (readonly in EDIT) */}
+      {/* Amount */}
       <div>
-        <Label htmlFor="txn-amount">Importo (€)</Label>
+        <Label htmlFor="txn-amount" required={!isEdit}>
+          Importo
+        </Label>
         <Input
           id="txn-amount"
           type="number"
           min="0.01"
           step="0.01"
           placeholder="0.00"
+          suffix="€"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           required
           disabled={isPending || isEdit}
         />
         {isEdit && (
-          <p className="text-xs text-slate-500 mt-1">
-            L'importo non si può modificare. Per correggerlo, annulla e ricrea la transazione.
+          <p className="flex items-start gap-1.5 text-xs text-fg-muted mt-1.5">
+            <Lock className="w-3 h-3 shrink-0 mt-0.5" />
+            <span>
+              L'importo non si può modificare. Per correggerlo, annulla e ricrea la transazione.
+            </span>
           </p>
         )}
       </div>
       
-      {/* Account (readonly in EDIT) */}
+      {/* Account */}
       <div>
-        <Label htmlFor="txn-account">Account</Label>
+        <Label htmlFor="txn-account" required={!isEdit}>
+          Account
+        </Label>
         <Select
           id="txn-account"
           value={accountId}
@@ -207,7 +207,9 @@ export function TransactionForm({
       
       {/* Description */}
       <div>
-        <Label htmlFor="txn-description">Descrizione</Label>
+        <Label htmlFor="txn-description" required>
+          Descrizione
+        </Label>
         <Input
           id="txn-description"
           type="text"
@@ -221,9 +223,9 @@ export function TransactionForm({
         />
       </div>
       
-      {/* Merchant (opzionale) */}
+      {/* Merchant */}
       <div>
-        <Label htmlFor="txn-merchant">Da/a chi (opzionale)</Label>
+        <Label htmlFor="txn-merchant">Da / a chi</Label>
         <Input
           id="txn-merchant"
           type="text"
@@ -235,9 +237,9 @@ export function TransactionForm({
         />
       </div>
       
-      {/* Category (opzionale) */}
+      {/* Category */}
       <div>
-        <Label htmlFor="txn-category">Categoria (opzionale)</Label>
+        <Label htmlFor="txn-category">Categoria</Label>
         <Select
           id="txn-category"
           value={categoryId}
@@ -253,9 +255,11 @@ export function TransactionForm({
         </Select>
       </div>
       
-      {/* Data/ora */}
+      {/* When */}
       <div>
-        <Label htmlFor="txn-when">Quando</Label>
+        <Label htmlFor="txn-when" required>
+          Quando
+        </Label>
         <Input
           id="txn-when"
           type="datetime-local"
@@ -266,8 +270,14 @@ export function TransactionForm({
         />
       </div>
       
+      {/* Actions */}
       <div className="flex gap-2 pt-2">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onCancel}
+          disabled={isPending}
+        >
           Annulla
         </Button>
         <Button type="submit" loading={isPending}>
@@ -288,30 +298,43 @@ interface DirectionButtonProps {
   onClick: () => void;
   disabled: boolean;
   label: string;
-  emoji: string;
-  activeClass: string;
+  icon: React.ReactNode;
+  activeColor: "success" | "danger";
 }
+
 
 function DirectionButton({
   active,
   onClick,
   disabled,
   label,
-  emoji,
-  activeClass,
+  icon,
+  activeColor,
 }: DirectionButtonProps) {
+  const activeClasses = {
+    success: "bg-success-soft border-success text-success",
+    danger: "bg-danger-soft border-danger text-danger",
+  }[activeColor];
+  
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       className={`
-        p-3 rounded-lg border-2 transition flex items-center justify-center gap-2
+        inline-flex items-center justify-center gap-2
+        px-3 py-2.5 rounded-lg border-2 text-sm font-medium
+        transition-colors duration-150
         disabled:opacity-50 disabled:cursor-not-allowed
-        ${active ? activeClass : "border-slate-700 text-slate-400 hover:border-slate-600"}
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base
+        ${
+          active
+            ? activeClasses
+            : "bg-bg-surface border-border text-fg-secondary hover:border-border-strong hover:text-fg-primary"
+        }
       `}
     >
-      <span aria-hidden>{emoji}</span>
+      {icon}
       <span>{label}</span>
     </button>
   );

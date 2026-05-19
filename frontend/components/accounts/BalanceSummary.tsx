@@ -3,91 +3,128 @@
 /**
  * Widget "Totale spendibile" + breakdown.
  *
- * Usato sulla home dell'app. Mostra:
+ * Mostra:
  * - Il totale spendibile in grande (il numero che conta)
  * - Sotto: buoni pasto e investimenti separati
  */
 
+import { ArrowRight, Plus, TrendingUp, Utensils, Wallet } from "lucide-react";
 import Link from "next/link";
 
-import { formatCurrency } from "@/lib/format/currency";
 import { useAccountsSummaryQuery } from "@/lib/api/accounts";
+import { formatCurrency } from "@/lib/format/currency";
 
 
 export function BalanceSummary() {
   const { data: summary, isLoading, error } = useAccountsSummaryQuery();
   
+  // ============================================================
+  // LOADING
+  // ============================================================
   if (isLoading) {
     return (
-      <div className="bg-slate-900/50 rounded-lg p-4">
-        <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
-          Disponibile
+      <div className="bg-bg-surface border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet className="w-4 h-4 text-fg-muted" />
+          <div className="text-xs text-fg-secondary uppercase tracking-wider font-medium">
+            Disponibile
+          </div>
         </div>
-        <div className="text-slate-500 text-sm">caricamento...</div>
+        <div className="h-9 w-32 bg-bg-elevated rounded-md animate-pulse" />
       </div>
     );
   }
   
+  // ============================================================
+  // ERROR (silent fail)
+  // ============================================================
   if (error || !summary) {
-    return null;  // Silent fail: il box scompare in caso di errore
+    return null;
   }
   
-  // Se l'utente non ha ancora nessun account, mostriamo un CTA
+  // ============================================================
+  // EMPTY STATE (no accounts)
+  // ============================================================
   if (summary.accounts_count === 0) {
     return (
-      <div className="bg-slate-900/50 rounded-lg p-4">
-        <div className="text-xs text-slate-500 uppercase tracking-wider mb-2">
-          Disponibile
+      <div className="bg-bg-surface border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet className="w-4 h-4 text-fg-muted" />
+          <div className="text-xs text-fg-secondary uppercase tracking-wider font-medium">
+            Disponibile
+          </div>
         </div>
-        <p className="text-slate-400 text-sm mb-3">
+        <p className="text-fg-secondary text-sm mb-3">
           Nessun account configurato.
         </p>
         <Link
           href="/settings/accounts"
-          className="text-sm text-emerald-400 hover:text-emerald-300 underline"
+          className="
+            inline-flex items-center gap-1.5
+            text-sm text-accent hover:text-accent-hover font-medium
+            transition-colors duration-150
+          "
         >
-          Aggiungi il primo →
+          <Plus className="w-3.5 h-3.5" />
+          <span>Aggiungi il primo</span>
         </Link>
       </div>
     );
   }
   
-  const hasExtras =
-    Number(summary.total_meal_vouchers) > 0 ||
-    Number(summary.total_investments) > 0;
+  const hasMealVouchers = Number(summary.total_meal_vouchers) > 0;
+  const hasInvestments = Number(summary.total_investments) > 0;
+  const hasExtras = hasMealVouchers || hasInvestments;
   
   return (
-    <div className="bg-slate-900/50 rounded-lg p-4">
-      <div className="flex items-baseline justify-between mb-2">
-        <div className="text-xs text-slate-500 uppercase tracking-wider">
-          Disponibile
+    <div className="bg-bg-surface border border-border rounded-xl p-5">
+      {/* Header */}
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-fg-muted" />
+          <div className="text-xs text-fg-secondary uppercase tracking-wider font-medium">
+            Disponibile
+          </div>
         </div>
         <Link
           href="/settings/accounts"
-          className="text-xs text-emerald-400 hover:text-emerald-300"
+          className="
+            inline-flex items-center gap-1
+            text-xs text-accent hover:text-accent-hover font-medium
+            transition-colors duration-150
+          "
         >
-          gestisci →
+          <span>gestisci</span>
+          <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
       
-      <div className="text-3xl font-bold text-white tabular-nums">
+      {/* Big number */}
+      <div className="font-display text-4xl font-bold text-fg-primary tabular-nums tracking-tight">
         {formatCurrency(summary.total_spendable)}
       </div>
       
+      {/* Extras (meal vouchers + investments) */}
       {hasExtras && (
-        <div className="mt-3 pt-3 border-t border-slate-800 space-y-1 text-sm">
-          {Number(summary.total_meal_vouchers) > 0 && (
-            <div className="flex justify-between text-slate-400">
-              <span>🍽️ Buoni pasto</span>
-              <span className="tabular-nums">
+        <div className="mt-4 pt-4 border-t border-border-muted space-y-2 text-sm">
+          {hasMealVouchers && (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-fg-secondary">
+                <Utensils className="w-3.5 h-3.5 text-viz-3" />
+                <span>Buoni pasto</span>
+              </div>
+              <span className="text-fg-primary tabular-nums font-medium">
                 {formatCurrency(summary.total_meal_vouchers)}
               </span>
             </div>
           )}
-          {Number(summary.total_investments) > 0 && (
-            <div className="flex justify-between text-slate-400">
-              <span>📈 Investimenti</span>
-              <span className="tabular-nums">
+          {hasInvestments && (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-fg-secondary">
+                <TrendingUp className="w-3.5 h-3.5 text-viz-5" />
+                <span>Investimenti</span>
+              </div>
+              <span className="text-fg-primary tabular-nums font-medium">
                 {formatCurrency(summary.total_investments)}
               </span>
             </div>

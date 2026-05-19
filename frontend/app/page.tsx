@@ -7,10 +7,26 @@
  * breakdown per categoria, ultime transazioni.
  */
 
+import {
+  ArrowRight,
+  CreditCard,
+  FolderTree,
+  LayoutDashboard,
+  LogOut,
+  MessageCircle,
+  PiggyBank,
+  Receipt,
+  Sparkles,
+  TrendingUp,
+  User,
+  Wallet,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { HealthStatus } from "@/components/HealthStatus";
 import { BalanceSummary } from "@/components/accounts/BalanceSummary";
+import { AskMoneyBuddyWidget } from "@/components/chat/AskMoneyBuddyWidget";
 import { BudgetsWidget } from "@/components/budgets/BudgetsWidget";
 import { CategoryBreakdownCard } from "@/components/dashboard/CategoryBreakdownCard";
 import { MonthlyComparisonCard } from "@/components/dashboard/MonthlyComparisonCard";
@@ -18,7 +34,6 @@ import { RecentTransactionsWidget } from "@/components/transactions/RecentTransa
 import { Button } from "@/components/ui/Button";
 import { useAnalyticsOverviewQuery } from "@/lib/api/analytics";
 import { useAuth } from "@/lib/auth/context/useAuth";
-import { AskMoneyBuddyWidget } from "@/components/chat/AskMoneyBuddyWidget";
 
 
 export default function HomePage() {
@@ -26,28 +41,54 @@ export default function HomePage() {
   const { data: analytics } = useAnalyticsOverviewQuery();
   
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-2xl mx-auto py-8 space-y-4">
-        {/* Header */}
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-xl">
-          <h1 className="text-3xl font-bold text-white mb-1">MoneyBuddy</h1>
-          <p className="text-slate-400 text-sm">
-            Il tuo assistente finanziario con AI
-          </p>
-        </div>
+    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto py-6 space-y-4">
+        {/* Header con logo */}
+        <header className="flex items-center justify-between">
+          <Image
+            src="/brand/logo.svg"
+            alt="MoneyBuddy"
+            width={180}
+            height={40}
+            priority
+            className="h-10 w-auto"
+          />
+          {status === "authenticated" && (
+            <button
+              onClick={logout}
+              className="
+                inline-flex items-center gap-1.5
+                px-3 py-1.5 rounded-md text-xs font-medium
+                text-fg-muted hover:text-fg-primary hover:bg-bg-elevated
+                transition-colors duration-150
+              "
+              aria-label="Esci"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Esci</span>
+            </button>
+          )}
+        </header>
         
-        {/* Stato auth */}
+        {/* Stato auth: loading */}
         {status === "loading" && (
-          <div className="p-3 bg-slate-900/50 rounded-lg text-slate-400 text-sm">
-            Verifico sessione...
+          <div className="flex items-center gap-2 p-4 bg-bg-surface border border-border rounded-lg text-fg-secondary text-sm">
+            <span className="w-2 h-2 bg-fg-muted rounded-full animate-pulse" />
+            <span>Verifico sessione...</span>
           </div>
         )}
         
+        {/* Stato auth: unauthenticated */}
         {status === "unauthenticated" && (
-          <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-xl">
-            <p className="text-slate-300 text-sm mb-4">
-              Per iniziare ad usare MoneyBuddy, accedi o registrati.
-            </p>
+          <div className="bg-bg-surface border border-border rounded-xl p-6 space-y-4">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-fg-primary mb-1">
+                Benvenuto in MoneyBuddy
+              </h1>
+              <p className="text-fg-secondary text-sm">
+                Il tuo assistente finanziario personale con AI.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Link href="/login" className="block">
                 <Button variant="secondary">Accedi</Button>
@@ -56,45 +97,63 @@ export default function HomePage() {
                 <Button>Registrati</Button>
               </Link>
             </div>
-            <div className="mt-6">
+            <div className="pt-4 border-t border-border">
               <HealthStatus />
             </div>
           </div>
         )}
         
+        {/* Stato auth: authenticated */}
         {status === "authenticated" && user && (
           <>
-            {/* Saluto + navigazione */}
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-              <p className="text-emerald-400 text-sm mb-3">
-                Ciao <span className="font-semibold">{user.display_name}</span>!
-              </p>
-              <NavLinks logout={logout} />
+            {/* Saluto user */}
+            <div className="bg-bg-surface border border-border rounded-xl p-4 animate-stagger animate-stagger-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-accent-soft text-accent">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-fg-secondary text-xs">Bentornato</p>
+                  <p className="font-display font-semibold text-fg-primary">
+                    {user.display_name}
+                  </p>
+                </div>
+              </div>
+              <NavLinks />
             </div>
+            
             {/* Chiedi a MoneyBuddy */}
-            <AskMoneyBuddyWidget />
+            <div className="animate-stagger animate-stagger-2">
+              <AskMoneyBuddyWidget />
+            </div>
             
             {/* Riga 1: Balance + Budgets */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4 animate-stagger animate-stagger-3">
               <BalanceSummary />
               <BudgetsWidget />
             </div>
             
-            {/* Riga 2: Confronto mensile (full width) */}
+            {/* Riga 2: Confronto mensile */}
             {analytics && (
-              <MonthlyComparisonCard data={analytics.monthly_comparison} />
+              <div className="animate-stagger animate-stagger-4">
+                <MonthlyComparisonCard data={analytics.monthly_comparison} />
+              </div>
             )}
             
-            {/* Riga 3: Breakdown categoria (full width) */}
+            {/* Riga 3: Breakdown categoria */}
             {analytics && (
-              <CategoryBreakdownCard data={analytics.category_breakdown} />
+              <div className="animate-stagger animate-stagger-5">
+                <CategoryBreakdownCard data={analytics.category_breakdown} />
+              </div>
             )}
             
             {/* Riga 4: Ultime transazioni */}
-            <RecentTransactionsWidget />
+            <div className="animate-stagger animate-stagger-6">
+              <RecentTransactionsWidget />
+            </div>
             
             {/* Footer servizi */}
-            <div className="bg-slate-800/30 rounded-lg p-4">
+            <div className="pt-4 border-t border-border">
               <HealthStatus />
             </div>
           </>
@@ -109,38 +168,54 @@ export default function HomePage() {
 // NAVIGATION COMPONENT
 // ============================================================
 
-function NavLinks({ logout }: { logout: () => void }) {
-  const links: Array<{ href: string; label: string }> = [
-    { href: "/chat", label: "Chat" },
-    { href: "/me", label: "Profilo" },
-    { href: "/transactions", label: "Transazioni" },
-    { href: "/budgets", label: "Budget" },
-    { href: "/settings/accounts", label: "Account" },
-    { href: "/settings/categories", label: "Categorie" },
-    { href: "/settings/assets", label: "Asset" },
-    { href: "/settings/debts", label: "Debiti" },
-  ];
-  
+interface NavLinkDef {
+  href: string;
+  label: string;
+  icon: typeof MessageCircle;
+}
+
+const NAV_LINKS: NavLinkDef[] = [
+  { href: "/chat", label: "Chat", icon: MessageCircle },
+  { href: "/transactions", label: "Transazioni", icon: Receipt },
+  { href: "/budgets", label: "Budget", icon: PiggyBank },
+  { href: "/settings/accounts", label: "Account", icon: Wallet },
+  { href: "/settings/categories", label: "Categorie", icon: FolderTree },
+  { href: "/settings/assets", label: "Asset", icon: TrendingUp },
+  { href: "/settings/debts", label: "Debiti", icon: CreditCard },
+  { href: "/me", label: "Profilo", icon: User },
+];
+
+
+function NavLinks() {
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-      {links.map((link, i) => (
-        <span key={link.href} className="flex items-center gap-x-3">
+    <nav
+      className="
+        flex gap-1.5 overflow-x-auto -mx-1 px-1
+        [scrollbar-width:none]
+        [&::-webkit-scrollbar]:hidden
+      "
+      aria-label="Navigazione principale"
+    >
+      {NAV_LINKS.map((link) => {
+        const Icon = link.icon;
+        return (
           <Link
+            key={link.href}
             href={link.href}
-            className="text-emerald-400 hover:text-emerald-300 underline"
+            className="
+              inline-flex items-center gap-1.5 shrink-0
+              px-3 py-1.5 rounded-md text-xs font-medium
+              bg-bg-elevated hover:bg-accent-soft
+              text-fg-secondary hover:text-accent
+              border border-border hover:border-accent/40
+              transition-colors duration-150
+            "
           >
-            {link.label}
+            <Icon className="w-3.5 h-3.5" />
+            <span>{link.label}</span>
           </Link>
-          {i < links.length - 1 && <span className="text-slate-600">·</span>}
-        </span>
-      ))}
-      <span className="text-slate-600">·</span>
-      <button
-        onClick={logout}
-        className="text-slate-400 hover:text-slate-200 underline"
-      >
-        Esci
-      </button>
-    </div>
+        );
+      })}
+    </nav>
   );
 }

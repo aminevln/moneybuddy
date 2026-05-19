@@ -1,32 +1,76 @@
-import { forwardRef, type InputHTMLAttributes } from "react";
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
+
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  /** Mostra il campo come errore (bordo rosso) */
   hasError?: boolean;
+  
+  /** Icona Lucide a sinistra dentro l'input (es. lente, mail) */
+  iconLeft?: ReactNode;
+  
+  /** Suffisso testuale a destra (es. "€", "%") */
+  suffix?: ReactNode;
 }
 
+
 /**
- * Input testuale base con stile Tailwind.
+ * Input testuale di MoneyBuddy.
  *
- * forwardRef permette ai componenti padre di accedere al DOM input
- * (utile per focus programmatico, validazione esterna, ecc.)
+ * Esempi:
+ *   <Input type="email" placeholder="email" />
+ *   <Input iconLeft={<Search />} placeholder="Cerca..." />
+ *   <Input type="number" suffix="€" placeholder="0,00" />
+ *   <Input hasError placeholder="..." />
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", hasError, ...props }, ref) => {
+  ({ className = "", hasError, iconLeft, suffix, ...props }, ref) => {
+    const hasDecorations = iconLeft || suffix;
+    
+    const inputClasses = [
+      "w-full px-4 py-2.5 rounded-lg text-sm",
+      "bg-bg-surface text-fg-primary",
+      "border transition-colors duration-150",
+      hasError
+        ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
+        : "border-border focus:border-accent focus:ring-1 focus:ring-accent",
+      "placeholder:text-fg-muted",
+      "disabled:opacity-50 disabled:cursor-not-allowed",
+      "focus:outline-none",
+      // Padding extra se ha decorazioni laterali
+      iconLeft ? "pl-10" : "",
+      suffix ? "pr-10" : "",
+    ].filter(Boolean).join(" ");
+    
+    // Caso semplice: nessuna decorazione → input puro
+    if (!hasDecorations) {
+      return (
+        <input
+          ref={ref}
+          className={`${inputClasses} ${className}`}
+          {...props}
+        />
+      );
+    }
+    
+    // Caso con decorazioni: wrappiamo in relative
     return (
-      <input
-        ref={ref}
-        className={`
-          w-full px-4 py-2.5 rounded-lg
-          bg-slate-900/50 text-slate-100
-          border ${hasError ? "border-red-500" : "border-slate-700"}
-          placeholder:text-slate-500
-          focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition
-          ${className}
-        `}
-        {...props}
-      />
+      <div className="relative">
+        {iconLeft && (
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none">
+            {iconLeft}
+          </span>
+        )}
+        <input
+          ref={ref}
+          className={`${inputClasses} ${className}`}
+          {...props}
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted text-sm pointer-events-none">
+            {suffix}
+          </span>
+        )}
+      </div>
     );
   }
 );

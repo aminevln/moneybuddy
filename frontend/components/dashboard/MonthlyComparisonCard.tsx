@@ -4,11 +4,12 @@
  * Card di confronto del mese corrente vs precedente.
  *
  * Mostra:
- * - Entrate del mese
- * - Uscite del mese
- * - Netto (entrate - uscite)
- * - Per ognuna: delta vs mese precedente
+ * - Entrate del mese con delta
+ * - Uscite del mese con delta
+ * - Netto (entrate - uscite) in evidenza
  */
+
+import { Calendar, TrendingDown, TrendingUp } from "lucide-react";
 
 import type { MonthlyComparison } from "@/lib/api/analytics";
 import { formatCurrency } from "@/lib/format/currency";
@@ -19,10 +20,12 @@ interface MonthlyComparisonCardProps {
   data: MonthlyComparison;
 }
 
+
 export function MonthlyComparisonCard({ data }: MonthlyComparisonCardProps) {
   const income = Number(data.current_month_income);
   const expense = Number(data.current_month_expense);
   const net = income - expense;
+  const isNetPositive = net >= 0;
   
   // Mese corrente in formato "Maggio 2026"
   const monthLabel = new Date(data.current_month_start).toLocaleDateString("it-IT", {
@@ -31,42 +34,50 @@ export function MonthlyComparisonCard({ data }: MonthlyComparisonCardProps) {
   });
   
   return (
-    <div className="bg-slate-900/50 rounded-lg p-4">
+    <div className="bg-bg-surface border border-border rounded-xl p-5">
+      {/* Header */}
       <div className="flex items-baseline justify-between mb-4">
-        <div className="text-xs text-slate-500 uppercase tracking-wider">
-          {monthLabel}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-fg-muted" />
+          <div className="text-xs text-fg-secondary uppercase tracking-wider font-medium capitalize">
+            {monthLabel}
+          </div>
         </div>
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-fg-muted">
           vs mese precedente
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      {/* Entrate + Uscite */}
+      <div className="grid grid-cols-2 gap-5 mb-4">
         <MetricBlock
+          icon={<TrendingUp className="w-3.5 h-3.5 text-success" />}
           label="Entrate"
           value={data.current_month_income}
           delta={data.income_delta}
-          accentColor="text-emerald-400"
+          accentColor="text-success"
         />
         <MetricBlock
+          icon={<TrendingDown className="w-3.5 h-3.5 text-danger" />}
           label="Uscite"
           value={data.current_month_expense}
           delta={data.expense_delta}
-          accentColor="text-rose-400"
+          accentColor="text-danger"
           invertedDelta
         />
       </div>
       
-      {/* Netto */}
-      <div className="pt-3 border-t border-slate-800">
-        <div className="flex items-baseline justify-between">
-          <span className="text-sm text-slate-400">Netto del mese</span>
+      {/* Netto del mese */}
+      <div className="pt-4 border-t border-border-muted">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm text-fg-secondary">Netto del mese</span>
           <span
-            className={`text-xl font-bold tabular-nums ${
-              net >= 0 ? "text-emerald-400" : "text-rose-400"
-            }`}
+            className={`
+              font-display text-2xl font-bold tabular-nums tracking-tight
+              ${isNetPositive ? "text-success" : "text-danger"}
+            `}
           >
-            {net >= 0 ? "+" : "−"}{formatCurrency(Math.abs(net))}
+            {isNetPositive ? "+" : "−"}{formatCurrency(Math.abs(net))}
           </span>
         </div>
       </div>
@@ -80,6 +91,7 @@ export function MonthlyComparisonCard({ data }: MonthlyComparisonCardProps) {
 // ============================================================
 
 interface MetricBlockProps {
+  icon: React.ReactNode;
   label: string;
   value: string;
   delta: string;
@@ -87,7 +99,9 @@ interface MetricBlockProps {
   invertedDelta?: boolean;
 }
 
+
 function MetricBlock({
+  icon,
   label,
   value,
   delta,
@@ -96,8 +110,11 @@ function MetricBlock({
 }: MetricBlockProps) {
   return (
     <div>
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
-      <div className={`text-lg font-bold tabular-nums ${accentColor}`}>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        {icon}
+        <span className="text-xs text-fg-secondary font-medium">{label}</span>
+      </div>
+      <div className={`font-display text-xl font-bold tabular-nums tracking-tight ${accentColor}`}>
         {formatCurrency(value)}
       </div>
       <div className="mt-1">

@@ -1,11 +1,12 @@
 "use client";
 
+import { Boxes, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { AssetForm } from "@/components/assets/AssetForm";
 import { AssetList } from "@/components/assets/AssetList";
-import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import type { UserAsset } from "@/lib/api/assets";
 
@@ -30,37 +31,60 @@ export default function AssetsPage() {
   }
   
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="max-w-2xl mx-auto py-8">
-        <nav className="text-sm text-slate-500 mb-4">
-          <Link href="/" className="hover:text-slate-300">Home</Link>
-          <span className="mx-2">/</span>
-          <span>Asset</span>
+    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto py-6 space-y-4">
+        {/* Breadcrumb */}
+        <nav
+          className="flex items-center gap-1.5 text-xs text-fg-muted"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            href="/"
+            className="hover:text-fg-primary transition-colors duration-150"
+          >
+            Home
+          </Link>
+          <ChevronRight className="w-3 h-3" aria-hidden />
+          <span className="text-fg-secondary">Asset</span>
         </nav>
         
-        <Card>
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-white">I tuoi asset</h1>
-            <button
+        {/* Main card */}
+        <div className="bg-bg-surface border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Boxes className="w-5 h-5 text-fg-muted shrink-0" />
+              <h1 className="font-display text-xl font-bold text-fg-primary truncate">
+                I tuoi asset
+              </h1>
+            </div>
+            <Button
               onClick={openCreate}
-              className="px-3 py-1.5 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition"
+              size="sm"
+              fullWidth={false}
+              iconLeft={<Plus className="w-3.5 h-3.5" />}
             >
-              + Nuovo
-            </button>
+              Nuovo
+            </Button>
           </div>
-          <p className="text-slate-400 text-sm mb-6">
-            Le "cose" che possiedi: auto, casa, animali, dispositivi.
-            L'AI le userà per capire meglio le tue spese.
+          <p className="text-fg-secondary text-sm mb-6">
+            Le &quot;cose&quot; che possiedi: auto, casa, animali, dispositivi.
+            L&apos;AI le userà per capire meglio le tue spese.
           </p>
           
           <AssetList onEdit={openEdit} />
-        </Card>
+        </div>
       </div>
       
       <Modal
         open={modalOpen}
         onClose={close}
         title={editing ? "Modifica asset" : "Nuovo asset"}
+        description={
+          editing
+            ? undefined
+            : "Aggiungi un'auto, una casa, un animale: l'AI userà queste informazioni per dare consigli più precisi."
+        }
+        size="md"
       >
         <AssetForm
           initial={editing ?? undefined}

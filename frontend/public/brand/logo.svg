@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" fill="none">
+  <!-- Mark: cerchio arancione con M -->
+  <circle cx="24" cy="24" r="20" fill="#FF6B35"/>
+  <path
+    d="M14 32V16h3l5 8.5L27 16h3v16h-3V21.5l-4 7h-2l-4-7V32h-3z"
+    fill="#ffffff"
+    stroke-linejoin="round"
+  />
+  <!-- Wordmark: MoneyBuddy -->
+  <text
+    x="56"
+    y="32"
+    font-family="Sora, sans-serif"
+    font-weight="700"
+    font-size="22"
+    fill="#f5f5f7"
+    letter-spacing="-0.5"
+  >MoneyBuddy</text>
+</svg>
