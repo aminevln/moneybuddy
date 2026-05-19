@@ -7,6 +7,7 @@ disponibili come oggetto tipato `settings`.
 
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -30,6 +31,16 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+asyncpg://moneybuddy:moneybuddy_dev_password@localhost:5432/moneybuddy"
     )
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        """
+        Railway/Heroku/Render danno `postgresql://...` (driver sync).
+        Convertiamo in `postgresql+asyncpg://...` per SQLAlchemy async.
+        """
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
     
     # ============================================================
     # CORS
