@@ -9,6 +9,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+# Esegue le migrazioni del DB PRIMA di avviare l'app
+releaseCommand = "alembic upgrade head"
+
 # Health check path: Railway pinga questo URL per verificare che l'app sia su
 healthcheckPath = "/health"
 healthcheckTimeout = 30

@@ -23,25 +23,10 @@ from app.api import accounts, analytics, assets, auth, budgets, categories, chat
 async def lifespan(app: FastAPI):
     """Funzione che gira all'avvio e allo shutdown dell'app."""
     print(f"🚀 Starting {settings.app_name} in {settings.environment} mode")
-    # ============================================================
-    # MIGRATIONS al boot (production-ready)
-    # ============================================================
-    # In dev locale usi `make migrate` esplicitamente prima dell'avvio.
-    # In produzione (Railway) eseguiamo automaticamente alle startup,
-    # così zero step manuali. Idempotente: se già aggiornato, no-op.
-    if settings.environment == "production":
-        print(f"⚙️  Running Alembic migrations...")
-        try:
-            from alembic.config import Config
-            from alembic import command
-            
-            # Path assoluto a alembic.ini (Docker mette il codice in /app)
-            alembic_cfg = Config("/app/alembic.ini")
-            command.upgrade(alembic_cfg, "head")
-            print(f"✅ Migrations applied successfully")
-        except Exception as e:
-            print(f"❌ Migrations failed: {e}")
-            raise  # rilancia, così Railway capisce che il deploy è fallito
+    
+    # ❌ HO RIMOSSO IL BLOCCO 'MIGRATIONS al boot' DA QUI. 
+    # CI PENSA RAILWAY USANDO IL FILE railway.toml
+    
     # Seed delle categorie di sistema (idempotente)
     from app.db.session import AsyncSessionLocal
     from app.seed.system_categories import seed_system_categories
