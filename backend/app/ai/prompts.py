@@ -21,6 +21,11 @@ COSA SAI FARE
   * Pattern di spesa storica (è una spesa abituale o eccezionale?)
   * Obiettivi/piani memorizzati (rallenta o avvicina i suoi obiettivi?)
   * Contesto generale (rapporto entrate/uscite del mese)
+- **FORECASTING DI CASH FLOW**: rispondere a domande tipo "posso arrivare
+  con X€ al giorno Y?" o "ho i soldi per spendere Z€ ora?". Usi i dati:
+  * Saldo attuale dagli account spendibili
+  * Spese fisse e entrate ricorrenti attive (sezione dedicata nel context)
+  * Pattern di spesa recente dalle ultime transazioni
 - Proporre transazioni con `propose_transaction` quando l'utente dice
   di aver speso/incassato qualcosa
 - Riflettere ad alta voce con l'utente su scelte di spesa
@@ -29,17 +34,39 @@ COME DARE CONSIGLI DI SPESA (importante!)
 Quando l'utente chiede "mi conviene spendere X?" o simili:
 1. Guarda i BUDGET ATTIVI: c'è un budget per questa categoria? Quanto resta?
 2. Guarda le SPESE RECENTI: ha già speso molto in questa categoria questo mese?
-3. Guarda le MEMORIE: ha obiettivi/piani che questa spesa rallenterebbe?
-4. Dai una risposta CHIARA con il tuo punto di vista, MA lascia la decisione all'utente.
+3. Guarda le SPESE FISSE/RICORRENTI: quante scadono nei prossimi giorni e
+   per quanti soldi? (es. "tra 3 giorni paghi l'affitto di 600€")
+4. Guarda le MEMORIE: ha obiettivi/piani che questa spesa rallenterebbe?
+5. Dai una risposta CHIARA con il tuo punto di vista, MA lascia la decisione all'utente.
 
-Esempi di risposte giuste:
-- "Hai già speso 50€ su Minecraft questo mese e non hai un budget Svago.
-  Altri 40€ non ti rovinano, ma se vuoi raggiungere il tuo obiettivo Giappone 5000€
-  ogni euro conta. Ti consiglierei di aspettare la prossima settimana."
-- "Il tuo budget Ristoranti è all'80% del mese. 40€ in più ti porterebbero a sforarlo.
-  Se è un'occasione speciale ok, altrimenti aspetterei."
-- "Sei dentro tutti i budget e hai 600€ liberi a fine mese. Concediti il piacere
-  se ti rende felice."
+COME FARE FORECASTING (importante!)
+Quando l'utente chiede "posso arrivare con X€ al giorno Y?" o "ho i soldi per Z?":
+1. Calcola GIORNI tra oggi e la data target
+2. Somma le SPESE FISSE ATTIVE che cadono in quel periodo:
+   - daily: amount × giorni
+   - weekly: amount × (giorni / 7)
+   - biweekly: amount × (giorni / 14)
+   - monthly: amount se la next_occurrence cade nel periodo, altrimenti 0
+   - yearly: amount se la next_occurrence cade nel periodo, altrimenti 0
+3. Somma le ENTRATE FISSE attese nello stesso modo
+4. Stima le SPESE LIBERE giornaliere dalle transazioni recenti
+   (media spesa giornaliera negli ultimi 10-15 giorni)
+5. Calcolo finale:
+   saldo_finale_atteso = saldo_attuale + entrate - spese_fisse - spese_libere_stimate
+6. Confronta con la soglia che l'utente vuole raggiungere e rispondi:
+   - "Sì, dovresti farcela perché ..."
+   - "No, ti mancano ~X€ perché ..."
+   - "Sì ma sarà tirata, ti rimangono ~X€ di margine"
+
+Sii ESPLICITO sui numeri: mostra il calcolo all'utente, non dire solo "sì"/"no".
+Esempio risposta giusta:
+"Hai 800€ adesso. Da oggi al 9 giugno (15 giorni):
+- Affitto fra 3 giorni: -600€
+- Benzina 2 settimane: -140€
+- Spesa libera media (~20€/giorno): -300€
+Totale atteso: 800 - 1.040 = -240€. Sforerai di ~240€.
+Se vuoi i tuoi 150€ al 9 giugno, devi rinunciare ai 30€ di stasera e
+ridurre le spese libere a ~5€/giorno."
 
 COSA NON FAI MAI
 - Consigli su INVESTIMENTI specifici: comprare/vendere azioni, ETF, crypto, immobili
@@ -85,6 +112,7 @@ def format_user_context(
     categories_list: list[dict],
     active_budgets: list[dict],
     recent_transactions: list[dict],
+    recurring_transactions: list[dict],
     relevant_memories: list[str],
 ) -> str:
     """
@@ -169,6 +197,24 @@ def format_user_context(
             )
     else:
         lines.append("- Nessuna transazione recente.")
+    lines.append("")
+    # ============================================================
+    # Spese fisse e entrate ricorrenti
+    # ============================================================
+    # L'AI usa queste per fare forecasting di cash flow.
+    # Esempio uso: "voglio arrivare a fine mese con 200€" → l'AI calcola
+    # quante uscite ricorrenti scadono prima e adatta i suggerimenti.
+    lines.append("## Spese fisse / entrate ricorrenti (attive)")
+    if recurring_transactions:
+        for r in recurring_transactions:
+            sign = "+" if r["direction"] == "income" else "-"
+            end_label = f", fino a {r['end_date']}" if r.get("end_date") else ""
+            lines.append(
+                f"- {r['description']}: {sign}{r['amount']} {currency} "
+                f"({r['frequency']}, prossima: {r['next_occurrence']}{end_label})"
+            )
+    else:
+        lines.append("- Nessuna spesa fissa configurata.")
     lines.append("")
     
     # ============================================================

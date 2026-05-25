@@ -17,6 +17,7 @@ from app.ai.client import GeminiClient
 from app.models.user import User
 from app.repositories.account import AccountRepository
 from app.repositories.budget import BudgetRepository
+from app.repositories.recurring_transaction import RecurringTransactionRepository
 from app.repositories.transaction import TransactionRepository
 from app.services.memory import MemoryService
 
@@ -79,7 +80,20 @@ async def build_chat_context(
         page_size=10,
         include_voided=False,
     )
-    
+    # Spese fisse / entrate ricorrenti attive (per forecasting)
+    recurring_repo = RecurringTransactionRepository(db)
+    recurring_items = await recurring_repo.list_for_user(user.id, only_active=True)
+    recurring_list = [
+        {
+            "description": r.description,
+            "direction": r.direction.value,
+            "amount": str(r.amount),
+            "frequency": r.frequency.value,
+            "next_occurrence": r.next_occurrence.isoformat(),
+            "end_date": r.end_date.isoformat() if r.end_date else None,
+        }
+        for r in recurring_items
+    ]
     # Per il nome della categoria, facciamo un mini fetch
     # (potremmo ottimizzare con JOIN, ma 10 è poco)
     from app.repositories.category import CategoryRepository
@@ -127,5 +141,6 @@ async def build_chat_context(
         "categories_list": categories_list,
         "active_budgets": active_budgets_serializable,
         "recent_transactions": recent_transactions,
+        "recurring_transactions": recurring_list,
         "relevant_memories": relevant_memories,
     }
