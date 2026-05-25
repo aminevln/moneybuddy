@@ -65,6 +65,7 @@ class GeminiClient:
             system_instruction=system_instruction,
             temperature=temperature,
             max_output_tokens=max_output_tokens,
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
         
         try:
@@ -106,6 +107,11 @@ class GeminiClient:
             temperature=temperature,
             max_output_tokens=max_output_tokens,
             tools=tools or [],
+            # Disabilita il "thinking" esteso di gemini-2.5-flash.
+            # Il thinking aggiunge 5-10s di latenza interna prima di iniziare
+            # a generare testo. Per chat conversazionali (anche forecasting)
+            # non serve: la risposta viene comunque buona ma in 2-3s invece di 10+.
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
         )
         
         try:
