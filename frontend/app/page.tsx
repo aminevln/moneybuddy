@@ -42,7 +42,7 @@ export default function HomePage() {
   const { data: analytics } = useAnalyticsOverviewQuery();
   
   return (
-    <main className="min-h-screen bg-bg-base p-4 sm:p-6">
+    <main className="min-h-screen p-4 sm:p-6">
       <div className="max-w-2xl mx-auto py-6 space-y-4">
         {/* Header con logo */}
         <header className="flex items-center justify-between">
@@ -107,7 +107,7 @@ export default function HomePage() {
         {/* Stato auth: authenticated */}
         {status === "authenticated" && user && (
           <>
-            {/* Saluto user */}
+            {/* Saluto user + nav */}
             <div className="bg-bg-surface border border-border rounded-xl p-4 animate-stagger animate-stagger-1">
               <div className="flex items-center gap-3 mb-3">
                 <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-accent-soft text-accent">
@@ -122,37 +122,37 @@ export default function HomePage() {
               </div>
               <NavLinks />
             </div>
-            
-            {/* Chiedi a MoneyBuddy */}
+
+            {/* HERO: Saldo disponibile, a tutta larghezza */}
             <div className="animate-stagger animate-stagger-2">
+              <BalanceSummary />
+            </div>
+
+            {/* Chiedi a MoneyBuddy */}
+            <div className="animate-stagger animate-stagger-3">
               <AskMoneyBuddyWidget />
             </div>
-            
-            {/* Riga 1: Balance + Budgets */}
-            <div className="grid sm:grid-cols-2 gap-4 animate-stagger animate-stagger-3">
-              <BalanceSummary />
+
+            {/* Coppia di supporto: Budget + Confronto mensile */}
+            <div className="grid sm:grid-cols-2 gap-4 animate-stagger animate-stagger-4">
               <BudgetsWidget />
-            </div>
-            
-            {/* Riga 2: Confronto mensile */}
-            {analytics && (
-              <div className="animate-stagger animate-stagger-4">
+              {analytics && (
                 <MonthlyComparisonCard data={analytics.monthly_comparison} />
-              </div>
-            )}
-            
-            {/* Riga 3: Breakdown categoria */}
+              )}
+            </div>
+
+            {/* Breakdown categoria */}
             {analytics && (
               <div className="animate-stagger animate-stagger-5">
                 <CategoryBreakdownCard data={analytics.category_breakdown} />
               </div>
             )}
-            
-            {/* Riga 4: Ultime transazioni */}
+
+            {/* Ultime transazioni */}
             <div className="animate-stagger animate-stagger-6">
               <RecentTransactionsWidget />
             </div>
-            
+
             {/* Footer servizi */}
             <div className="pt-4 border-t border-border">
               <HealthStatus />

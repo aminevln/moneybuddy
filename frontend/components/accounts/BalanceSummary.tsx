@@ -77,7 +77,7 @@ export function BalanceSummary() {
   const hasExtras = hasMealVouchers || hasInvestments;
   
   return (
-    <div className="bg-bg-surface border border-border rounded-xl p-5">
+    <div className="glass-card glass-card-blur p-6 sm:p-7">
       {/* Header */}
       <div className="flex items-baseline justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -100,31 +100,31 @@ export function BalanceSummary() {
       </div>
       
       {/* Big number */}
-      <div className="font-display text-4xl font-bold text-fg-primary tabular-nums tracking-tight">
+      <div className="font-display text-5xl sm:text-6xl font-bold text-fg-primary tabular-nums tracking-tight leading-none mt-1">
         {formatCurrency(summary.total_spendable)}
       </div>
       
-      {/* Extras (meal vouchers + investments) */}
+      {/* Extras (meal vouchers + investments) — due colonne */}
       {hasExtras && (
-        <div className="mt-4 pt-4 border-t border-border-muted space-y-2 text-sm">
+        <div className="mt-5 pt-5 border-t border-glass-border grid grid-cols-2 gap-4 text-sm">
           {hasMealVouchers && (
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-fg-secondary">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 text-fg-secondary text-xs">
                 <Utensils className="w-3.5 h-3.5 text-viz-3" />
                 <span>Buoni pasto</span>
               </div>
-              <span className="text-fg-primary tabular-nums font-medium">
+              <span className="text-fg-primary tabular-nums font-semibold text-base">
                 {formatCurrency(summary.total_meal_vouchers)}
               </span>
             </div>
           )}
           {hasInvestments && (
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-fg-secondary">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 text-fg-secondary text-xs">
                 <TrendingUp className="w-3.5 h-3.5 text-viz-5" />
                 <span>Investimenti</span>
               </div>
-              <span className="text-fg-primary tabular-nums font-medium">
+              <span className="text-fg-primary tabular-nums font-semibold text-base">
                 {formatCurrency(summary.total_investments)}
               </span>
             </div>
