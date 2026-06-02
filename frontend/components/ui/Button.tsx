@@ -53,7 +53,7 @@ export function Button({
 }: ButtonProps) {
   const baseClasses = [
     "inline-flex items-center justify-center gap-2",
-    "font-medium transition-colors duration-150",
+    "font-medium transition-all duration-300",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base",
     fullWidth ? "w-full" : "",
@@ -67,11 +67,11 @@ export function Button({
   
   const variantClasses = {
     primary:
-      "bg-accent hover:bg-accent-hover active:bg-accent-pressed text-accent-fg",
+      "btn-glass-primary text-accent-fg",
     secondary:
-      "bg-bg-elevated hover:bg-bg-surface text-fg-primary border border-border",
+      "btn-glass-secondary text-fg-primary",
     ghost:
-      "bg-transparent hover:bg-bg-elevated text-fg-secondary hover:text-fg-primary",
+      "bg-transparent hover:bg-glass-strong text-fg-secondary hover:text-fg-primary",
     danger:
       "bg-danger hover:bg-danger/90 active:bg-danger/80 text-danger-fg",
   }[variant];

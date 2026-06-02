@@ -43,17 +43,17 @@ export function Card({
   ...props
 }: CardProps) {
   const baseClasses = [
-    "rounded-xl border transition-all duration-200",
+    "rounded-xl transition-all duration-200",
   ].join(" ");
   
   const variantClasses = {
-    default: "bg-bg-surface border-border",
-    subtle: "bg-bg-base border-border-muted",
-    elevated: "bg-bg-elevated border-border",
+    default: "glass-card",
+    subtle: "glass-card glass-card-subtle",
+    elevated: "glass-card glass-card-blur",
   }[variant];
 
   const interactionClasses = hoverable
-    ? "hover:bg-bg-elevated hover:border-border-strong cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
+    ? "hover:-translate-y-0.5 hover:shadow-glass-lg cursor-pointer glass-card-hover"
     : "";
   
   const paddingClasses = {

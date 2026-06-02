@@ -67,7 +67,7 @@ export function Modal({
   
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bg-overlay backdrop-blur-md p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -75,9 +75,9 @@ export function Modal({
     >
       <div
         className={`
-          bg-bg-surface border border-border rounded-xl
+          glass-card glass-card-blur
           w-full ${sizeClasses}
-          shadow-2xl animate-slide-up
+          shadow-glass-lg animate-slide-up
         `}
         onClick={(e) => e.stopPropagation()}
       >
