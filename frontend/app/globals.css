@@ -186,42 +186,24 @@ html, body {
   min-height: 100vh;
 }
 
+/* Safe area iOS (Dynamic Island, notch, home indicator) */
 body {
-  background-image: url("public/brand/mesh-sunset.svg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
-/* Ambient light — orbs sunset che il vetro rifrange */
+/* Mesh sunset su layer fisso dedicato — robusto su iOS/Android */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: url("public/brand/mesh-sunset.svg");
+  background-image: url("/brand/mesh-sunset.svg");
   background-size: cover;
   background-position: center;
-}
-
-@keyframes ambientBreath {
-  0%, 100% {
-    transform: scale(1) translateY(0);
-    opacity: 0.85;
-  }
-  50% {
-    transform: scale(1.08) translateY(-1.5%);
-    opacity: 1;
-  }
-}
-
-/* Rispetta chi ha disattivato le animazioni (accessibilità) */
-@media (prefers-reduced-motion: reduce) {
-  body::before {
-    animation: none;
-  }
 }
 
 /* Default tabular numbers (utile per finance) */
