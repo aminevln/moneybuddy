@@ -28,15 +28,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     
     const inputClasses = [
       "w-full px-4 py-2.5 rounded-lg text-sm",
-      "bg-bg-surface text-fg-primary",
-      "border transition-colors duration-150",
+      "glass-input text-fg-primary",
+      "transition-all duration-200",
       hasError
-        ? "border-danger focus:border-danger focus:ring-1 focus:ring-danger"
-        : "border-border focus:border-accent focus:ring-1 focus:ring-accent",
+        ? "border border-danger focus:border-danger focus:ring-1 focus:ring-danger"
+        : "border border-glass-border focus:border-accent focus:ring-1 focus:ring-accent",
       "placeholder:text-fg-muted",
       "disabled:opacity-50 disabled:cursor-not-allowed",
       "focus:outline-none",
-      // Padding extra se ha decorazioni laterali
       iconLeft ? "pl-10" : "",
       suffix ? "pr-10" : "",
     ].filter(Boolean).join(" ");

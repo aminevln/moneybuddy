@@ -29,6 +29,21 @@
   --color-border: #38383f;
   --color-border-muted: rgba(255, 255, 255, 0.06);
   --color-border-strong: #4a4a55;
+
+/* ============================================================
+     COLORS — Glass (liquid glass surfaces)
+     ============================================================ */
+  --color-glass-surface: rgba(255, 255, 255, 0.045);   /* card glass neutra */
+  --color-glass-strong: rgba(255, 255, 255, 0.07);     /* glass più presente (nav, hover) */
+  --color-glass-tint: rgba(255, 107, 53, 0.09);        /* glass tinta accent */
+  --color-glass-border: rgba(255, 255, 255, 0.10);     /* bordo vetro */
+  --color-glass-highlight: rgba(255, 255, 255, 0.22);  /* riflesso edge superiore */
+
+  --blur-glass: 20px;
+  --blur-glass-strong: 40px;
+
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --shadow-glass-lg: 0 16px 48px rgba(0, 0, 0, 0.40);
   
   /* ============================================================
      COLORS — Text / Foreground
@@ -156,14 +171,22 @@ html {
   text-rendering: optimizeLegibility;
 }
 
-/* Background con sottile gradient radiale per profondità */
 html, body {
   background-color: var(--color-bg-base);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 107, 53, 0.06), transparent),
-    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(139, 92, 246, 0.04), transparent);
-  background-attachment: fixed;
   min-height: 100vh;
+}
+
+/* Ambient light — orbs colorati che il vetro rifrange */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% -5%,  rgba(255, 107, 53, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 8%,   rgba(139, 92, 246, 0.08), transparent 60%),
+    radial-gradient(ellipse 65% 55% at 50% 105%, rgba(6, 182, 212, 0.05), transparent 60%);
 }
 
 /* Default tabular numbers (utile per finance) */
@@ -207,4 +230,81 @@ html, body {
 ::selection {
   background-color: var(--color-accent-soft);
   color: var(--color-fg-primary);
+}
+
+/* ============================================================
+   GLASS RECIPE
+   ============================================================ */
+
+/* Base glass — fake glass, niente backdrop-filter, GPU-cheap.
+   Usa questa per la maggior parte delle card. */
+.glass-card {
+  position: relative;
+  background-color: var(--color-glass-surface);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    var(--shadow-glass),
+    inset 0 1px 0 0 var(--color-glass-highlight);  /* edge highlight superiore */
+}
+
+/* Modifier: blur vero. SOLO per pochi elementi (max 5-7 visibili). */
+.glass-card-blur {
+  background-color: var(--color-glass-surface);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+}
+
+/* Modifier: vetro tinto accent (per card "hero" / highlight). */
+.glass-card-tint {
+  background-color: var(--color-glass-tint);
+}
+
+/* Variante più leggera per widget secondari. */
+.glass-card-subtle {
+  background-color: var(--color-glass-surface);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Hover state per card cliccabili. */
+.glass-card-hover {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card-hover:hover {
+  background-color: var(--color-glass-strong);
+  border-color: var(--color-glass-border);
+}
+
+/* Button primary: glass tinted accent + specular highlight on hover. */
+.btn-glass-primary {
+  background-color: var(--color-accent);
+  position: relative;
+  overflow: hidden;
+}
+.btn-glass-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.25) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-glass-primary:hover { background-color: var(--color-accent-hover); }
+.btn-glass-primary:hover::after { transform: translateX(100%); }
+.btn-glass-primary:active { background-color: var(--color-accent-pressed); }
+
+/* Button secondary: glass fake neutro. */
+.btn-glass-secondary {
+  background-color: var(--color-glass-surface);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: inset 0 1px 0 0 var(--color-glass-highlight);
+}
+.btn-glass-secondary:hover { background-color: var(--color-glass-strong); }
+
+/* Input glass. */
+.glass-input {
+  background-color: var(--color-glass-surface);
+}
+.glass-input:focus {
+  background-color: var(--color-glass-strong);
 }
