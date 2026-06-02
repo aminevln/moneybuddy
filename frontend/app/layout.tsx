@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { AuthProvider } from "@/lib/auth/context/AuthProvider";
 import { QueryProvider } from "@/lib/query/QueryProvider";
+import { TabBarGate } from "@/components/navigation/TabBarGate";
 
 
 // Body font: Geist (sans-serif moderno, leggibile)
@@ -135,6 +136,7 @@ export default function RootLayout({
         <AuthProvider>
           <QueryProvider>
             {children}
+            <TabBarGate />
           </QueryProvider>
         </AuthProvider>
       </body>

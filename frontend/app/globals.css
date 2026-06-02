@@ -181,11 +181,6 @@ html {
   text-rendering: optimizeLegibility;
 }
 
-html, body {
-  background-color: var(--color-bg-base);
-  min-height: 100vh;
-}
-
 /* Safe area iOS (Dynamic Island, notch, home indicator) */
 body {
   padding-top: env(safe-area-inset-top);
@@ -324,4 +319,20 @@ body::before {
 }
 .glass-input:focus {
   background-color: var(--color-glass-strong);
+}
+
+/* Tab bar mobile: pill flottante stile WhatsApp. */
+.glass-tabbar {
+  background-color: rgba(28, 20, 26, 0.82);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Pill sotto l'icona attiva nella tab bar. */
+.tab-active-pill {
+  background-color: var(--color-accent-soft);
 }
