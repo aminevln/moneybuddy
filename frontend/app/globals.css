@@ -187,7 +187,7 @@ html, body {
 }
 
 body {
-  background-image: url("public/brand/mesh-sunset.svg");
+  background-image: url("/brand/mesh-sunset.svg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -201,7 +201,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: url("public/brand/mesh-sunset.svg");
+  background-image: url("/brand/mesh-sunset.svg");
   background-size: cover;
   background-position: center;
 }
