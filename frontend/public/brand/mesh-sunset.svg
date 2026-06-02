@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1024" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="orb1" cx="12%" cy="0%" r="55%">
+      <stop offset="0%" stop-color="#FF6B35" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#FF6B35" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FF6B35" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx="90%" cy="8%" r="50%">
+      <stop offset="0%" stop-color="#F25C8A" stop-opacity="0.48"/>
+      <stop offset="45%" stop-color="#F25C8A" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#F25C8A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb3" cx="50%" cy="105%" r="60%">
+      <stop offset="0%" stop-color="#A855C7" stop-opacity="0.45"/>
+      <stop offset="48%" stop-color="#A855C7" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#A855C7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb4" cx="75%" cy="62%" r="42%">
+      <stop offset="0%" stop-color="#C95FB0" stop-opacity="0.30"/>
+      <stop offset="50%" stop-color="#C95FB0" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#C95FB0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0%" y1="100%" x2="80%" y2="0%">
+      <stop offset="30%" stop-color="#FF6B35" stop-opacity="0"/>
+      <stop offset="48%" stop-color="#FF8555" stop-opacity="0.16"/>
+      <stop offset="56%" stop-color="#F25C8A" stop-opacity="0.10"/>
+      <stop offset="70%" stop-color="#F25C8A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="1024" fill="#1b1419"/>
+  <rect width="1440" height="1024" fill="url(#orb1)"/>
+  <rect width="1440" height="1024" fill="url(#orb2)"/>
+  <rect width="1440" height="1024" fill="url(#orb3)"/>
+  <rect width="1440" height="1024" fill="url(#orb4)"/>
+  <rect width="1440" height="1024" fill="url(#beam)"/>
+</svg>
