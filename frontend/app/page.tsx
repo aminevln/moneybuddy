@@ -25,7 +25,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-import { HealthStatus } from "@/components/HealthStatus";
 import { BalanceSummary } from "@/components/accounts/BalanceSummary";
 import { AskMoneyBuddyWidget } from "@/components/chat/AskMoneyBuddyWidget";
 import { BudgetsWidget } from "@/components/budgets/BudgetsWidget";
@@ -98,9 +97,6 @@ export default function HomePage() {
                 <Button>Registrati</Button>
               </Link>
             </div>
-            <div className="pt-4 border-t border-border">
-              <HealthStatus />
-            </div>
           </div>
         )}
         
@@ -151,11 +147,6 @@ export default function HomePage() {
             {/* Ultime transazioni */}
             <div className="animate-stagger animate-stagger-6">
               <RecentTransactionsWidget />
-            </div>
-
-            {/* Footer servizi */}
-            <div className="pt-4 border-t border-border">
-              <HealthStatus />
             </div>
           </>
         )}
